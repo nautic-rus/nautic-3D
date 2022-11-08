@@ -42,6 +42,8 @@ class _ThreeRender extends State<ThreeRender> {
   late three.Scene scene;
   late three.Camera camera;
 
+  late three.Group group;
+
   num aspect = 2.0;
   double dpr = 1.0;
   late int index;
@@ -57,6 +59,8 @@ class _ThreeRender extends State<ThreeRender> {
   late int currentSpoolIndex;
   var currentSpool;
   var currentDocNumber;
+  var nextSpoolIndex;
+  var previousSpoolNumber;
 
   @override
   void initState() {
@@ -71,12 +75,13 @@ class _ThreeRender extends State<ThreeRender> {
               spoolsList.add(element);
             });
             currentSpoolIndex = spoolsList.indexOf(currentSpool);
+            nextSpoolIndex = currentSpoolIndex;
+            previousSpoolNumber = currentSpoolIndex;
 
             print(spoolsList);
             print("Current spool index is $currentSpoolIndex");
           })
         });
-
 
     // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
@@ -129,35 +134,76 @@ class _ThreeRender extends State<ThreeRender> {
                 }),
             Positioned(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       SizedBox(
-                          height: height,
+                          height: height / 2.0,
                           width: width * 0.1,
                           child: TextButton(
                             onPressed: () => previousSpool(),
-                            child: Text("<-"),
+                            child: RotatedBox(
+                              quarterTurns: 1,
+                              child: Text("Previous"),
+                            ),
                             style: TextButton.styleFrom(
-                              primary: Colors.white,
+                              primary: Colors.black,
                               onSurface: Colors.white,
                             ),
                           )),
                       SizedBox(
-                          height: height,
+                          height: height / 2.0,
                           width: width * 0.1,
                           child: TextButton(
                             onPressed: () => nextSpool(),
-                            child: Text("->"),
+                            child: RotatedBox(
+                              quarterTurns: 1,
+                              child: Text("Next"),
+                            ),
                             style: TextButton.styleFrom(
-                              primary: Colors.white,
+                              primary: Colors.black,
                               onSurface: Colors.white,
                             ),
                           )),
                     ],
                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      SizedBox(
+                          height: height / 2.0,
+                          width: width * 0.1,
+                          child: TextButton(
+                            onPressed: () => addPreviousSpool(),
+                            child: RotatedBox(
+                              quarterTurns: 1,
+                              child: Text("Add previous"),
+                            ),
+                            style: TextButton.styleFrom(
+                              primary: Colors.black,
+                              onSurface: Colors.white,
+                            ),
+                          )),
+                      SizedBox(
+                          height: height / 2.0,
+                          width: width * 0.1,
+                          child: TextButton(
+                            onPressed: () => addNextSpool(),
+                            child: RotatedBox(
+                              quarterTurns: 1,
+                              child: Text("Add next"),
+                            ),
+                            style: TextButton.styleFrom(
+                              primary: Colors.black,
+                              onSurface: Colors.white,
+                            ),
+                          )),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -170,22 +216,33 @@ class _ThreeRender extends State<ThreeRender> {
   nextSpool() {
     currentSpoolIndex++;
     data[1] = spoolsList[currentSpoolIndex];
-    setState(() {
-      widget.url = getUrl(data);
-      initScene();
-      print(widget.url);
-    });
-    ;
+    widget.url = getUrl(data);
+    replaceObjScene();
+    print(widget.url);
   }
 
   previousSpool() {
     currentSpoolIndex--;
     data[1] = spoolsList[currentSpoolIndex];
-    setState(() {
-      widget.url = getUrl(data);
-      initScene();
-      print(widget.url);
-    });
+    widget.url = getUrl(data);
+    replaceObjScene();
+    print(widget.url);
+  }
+
+  addNextSpool() {
+    nextSpoolIndex++;
+    data[1] = spoolsList[nextSpoolIndex];
+    widget.url = getUrl(data);
+    addObjScene();
+    print(widget.url);
+  }
+
+  addPreviousSpool() {
+    previousSpoolNumber--;
+    data[1] = spoolsList[previousSpoolNumber];
+    widget.url = getUrl(data);
+    addObjScene();
+    print(widget.url);
   }
 
   void _showToast(BuildContext context) {
@@ -268,7 +325,6 @@ class _ThreeRender extends State<ThreeRender> {
     renderer!.setPixelRatio(dpr);
     renderer!.setSize(width, height, false);
     renderer!.shadowMap.enabled = false;
-    renderer!.autoClear = true;
 
     if (!kIsWeb) {
       var pars = three.WebGLRenderTargetOptions({
@@ -301,10 +357,10 @@ class _ThreeRender extends State<ThreeRender> {
 
     scene.add(camera);
 
-    scene.background = three.Color(0x808080);
+    scene.background = three.Color(0xdddddd);
 
     // soft white light
-    var ambientLight = three.AmbientLight(0x404040);
+    var ambientLight = three.AmbientLight(0x404040, 100);
     ambientLight.intensity = 3;
     scene.add(ambientLight);
 
@@ -313,29 +369,77 @@ class _ThreeRender extends State<ThreeRender> {
 
     controls = three_jsm.OrbitControls(camera, _globalKey);
 
-    axes = three.AxesHelper(0.1);
-    localToCameraAxesPlacement = three.Vector3(-0.5 * camera.aspect, -0.75, -2);
-    scene.add(axes);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
+    controls.enableZoom = true;
 
     controls.minDistance = 10;
     controls.maxDistance = 30000;
 
+    axes = three.AxesHelper(100000);
+    localToCameraAxesPlacement = controls.target;
+    scene.add(axes);
+
     controls.update();
 
+    group = three.Group();
+
     loadObjFromZip();
-    // three.Object3D object;
+  }
 
-    // object = await loader.loadAsync('assets/megahull.obj');
-    // scene.add(object);
-    // setView(object);
-    // animate();
+  addObjScene() {
+    loadObjFromZip2();
+  }
 
-    // scene.addEventListener('resize', initPlatformState);
-    //
-    // controls.touches = {
-    //   'ONE': three.TOUCH.ROTATE,
-    //   'TWO': three.TOUCH.DOLLY_PAN
-    // };
+  replaceObjScene() {
+    for (var i = scene.children.length - 1; i >= 0; i--) {
+      var obj = scene.children[i];
+      if (obj.type == 'Group') scene.remove(obj);
+    }
+    loadObjFromZip();
+  }
+
+  loadObjFromZip2() {
+    var loader = three_jsm.OBJLoader(null);
+    bool first = true;
+
+    fetchFiles(widget.url).then((archive) => {
+          // scene.clear(),
+          setState(() {
+            group = three.Group();
+            var archiveFiles = 0;
+            archive.files.forEach((file) {
+              var decode = utf8.decode(file.content);
+              List<String> split;
+              List<String> formatted = List.empty(growable: true);
+              decode.split('\n').forEach((line) => {
+                    split = line.split(' '),
+                    if (split.isNotEmpty && split.elementAt(0) == 'v')
+                      {formatted.add(line)}
+                    else if (split.isNotEmpty && split.elementAt(0) == 'f')
+                      {
+                        formatted.add(List.from([
+                          'f',
+                          split.elementAt(1).replaceAll("/", "//"),
+                          split.elementAt(2).replaceAll("/", "//"),
+                          split.elementAt(3).replaceAll("/", "//")
+                        ]).join(' ')),
+                      }
+                    else if (line.trim() == "")
+                      {}
+                    else
+                      {formatted.add(line)}
+                  });
+
+              (loader.parse(formatted.join('\n')) as Future<dynamic>)
+                  .then((model) => {
+                        group.add(model),
+                        if (++archiveFiles == archive.files.length)
+                          {scene.add(group), animate()}
+                      });
+            });
+          })
+        });
   }
 
   loadObjFromZip() {
@@ -345,7 +449,7 @@ class _ThreeRender extends State<ThreeRender> {
     fetchFiles(widget.url).then((archive) => {
           // scene.clear(),
           setState(() {
-            var group = three.Group();
+            group = three.Group();
             var archiveFiles = 0;
             archive.files.forEach((file) {
               var decode = utf8.decode(file.content);
@@ -408,12 +512,6 @@ class _ThreeRender extends State<ThreeRender> {
     camera.near = distance / 100;
     camera.far = distance * 100;
     camera.updateProjectionMatrix();
-
-    camera.position.copy(controls.target).sub(direction);
-
-    axes = three.AxesHelper(camera.far);
-    localToCameraAxesPlacement = controls.target;
-    scene.add(axes);
 
     controls.update();
     // axesControls.update();
