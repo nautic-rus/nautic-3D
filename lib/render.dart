@@ -29,20 +29,19 @@ class _ThreeRender extends State<ThreeRender> {
   three.WebGLRenderer? renderer;
 
   int? fboId;
-  late double width = MediaQuery.of(context).size.width * 0.5;
-  late double height = MediaQuery.of(context).size.height * 0.5;
+  late double width = MediaQuery.of(context).size.height * 0.5;
+  late double height = MediaQuery.of(context).size.width * 0.5;
 
   Size? screenSize;
 
   late three.Scene scene;
   late three.Camera camera;
-  late three.Mesh mesh;
 
   var appBarHeight = 50.0;
 
-  double dpr = 1.0;
+  num aspect = 2.0;
 
-  var amount = 4;
+  double dpr = 1.0;
 
   bool verbose = true;
   bool disposed = false;
@@ -52,13 +51,17 @@ class _ThreeRender extends State<ThreeRender> {
   dynamic sourceTexture;
 
   final GlobalKey<three_jsm.DomLikeListenableState> _globalKey =
-      GlobalKey<three_jsm.DomLikeListenableState>();
+  GlobalKey<three_jsm.DomLikeListenableState>();
 
   late three_jsm.OrbitControls controls;
+  var localToCameraAxesPlacement;
+
+  late three.AxesHelper axes;
 
   @override
   void initState() {
     super.initState();
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -81,7 +84,7 @@ class _ThreeRender extends State<ThreeRender> {
 
     setState(() {});
 
-    Future.delayed(const Duration(milliseconds: 100), () async {
+    Future.delayed(const Duration(milliseconds: 10), () async {
       await three3dRender.prepareContext();
 
       initScene();
@@ -144,7 +147,7 @@ class _ThreeRender extends State<ThreeRender> {
                         if (kIsWeb) {
                           return three3dRender.isInitialized
                               ? HtmlElementView(
-                                  viewType: three3dRender.textureId!.toString())
+                              viewType: three3dRender.textureId!.toString())
                               : Container();
                         } else {
                           return three3dRender.isInitialized
@@ -160,26 +163,15 @@ class _ThreeRender extends State<ThreeRender> {
   }
 
   render() {
-    int t = DateTime.now().millisecondsSinceEpoch;
     final gl = three3dRender.gl;
 
-    renderer!.render(scene, camera);
+    camera.updateMatrixWorld();
+    var axesPlacement = localToCameraAxesPlacement.clone();
+    axes.position.copy(axesPlacement);
 
-    int t1 = DateTime.now().millisecondsSinceEpoch;
-
-    if (verbose) {
-      print("render cost: ${t1 - t} ");
-      print(renderer!.info.memory);
-      print(renderer!.info.render);
-    }
+    renderer?.render(scene, camera);
 
     gl.flush();
-
-    // var pixels = _gl.readCurrentPixels(0, 0, 10, 10);
-    // print(" --------------pixels............. ");
-    // print(pixels);
-
-    if (verbose) print(" render: sourceTexture: $sourceTexture ");
 
     if (!kIsWeb) {
       three3dRender.updateTexture(sourceTexture);
@@ -194,16 +186,19 @@ class _ThreeRender extends State<ThreeRender> {
       "antialias": true,
       "canvas": three3dRender.element
     };
+
     renderer = three.WebGLRenderer(options);
     renderer!.setPixelRatio(dpr);
     renderer!.setSize(width, height, false);
     renderer!.shadowMap.enabled = false;
+    renderer!.autoClear = true;
 
     if (!kIsWeb) {
       var pars = three.WebGLRenderTargetOptions({
         "minFilter": three.LinearFilter,
         "magFilter": three.LinearFilter,
-        "format": three.RGBAFormat
+        "format": three.RGBAFormat,
+        "samples": 4
       });
       renderTarget = three.WebGLRenderTarget(
           (width * dpr).toInt(), (height * dpr).toInt(), pars);
@@ -218,14 +213,20 @@ class _ThreeRender extends State<ThreeRender> {
     initPage();
   }
 
-  initPage() {
+  initPage() async {
+    // create the scene
+    aspect = width / height;
+
     scene = three.Scene();
-    camera = three.PerspectiveCamera(40, width / height, 1, 100000);
-    camera.position.set(0, 0, 1000);
+
+    camera = three.PerspectiveCamera(50, aspect, 1, 10000);
+    camera.position.z = 1000;
+
     scene.add(camera);
 
     scene.background = three.Color(0x808080);
 
+    // soft white light
     var ambientLight = three.AmbientLight(0x404040);
     ambientLight.intensity = 3;
     scene.add(ambientLight);
@@ -235,49 +236,70 @@ class _ThreeRender extends State<ThreeRender> {
 
     controls = three_jsm.OrbitControls(camera, _globalKey);
 
+    axes = three.AxesHelper(0.1);
+    localToCameraAxesPlacement = three.Vector3(-0.5 * camera.aspect, -0.75, -2);
+    scene.add(axes);
+
     controls.minDistance = 10;
     controls.maxDistance = 30000;
 
-    // var material = three.MeshBasicMaterial(three.Color{0x00ff00});
+    controls.update();
+
+    animate();
+
     var loader = three_jsm.OBJLoader(null);
     bool first = true;
 
-    fetchFiles(widget.url).then((archive) => {
-          setState(() {
-            var group = three.Group();
-            var archiveFiles = 0;
-            archive.files.forEach((file) {
-              var decode = utf8.decode(file.content);
-              List<String> split;
-              List<String> formatted = List.empty(growable: true);
-              decode.split('\n').forEach((line) => {
-                    split = line.split(' '),
-                    if (split.isNotEmpty && split.elementAt(0) == 'v')
-                      {formatted.add(line)}
-                    else if (split.isNotEmpty && split.elementAt(0) == 'f')
-                      {
-                        formatted.add(List.from([
-                          'f',
-                          split.elementAt(1).replaceAll("/", "//"),
-                          split.elementAt(2).replaceAll("/", "//"),
-                          split.elementAt(3).replaceAll("/", "//")
-                        ]).join(' ')),
-                      }
-                    else if (line.trim() == "")
-                      {}
-                    else
-                      {formatted.add(line)}
-                  });
+    // three.Object3D object;
 
-              (loader.parse(formatted.join('\n')) as Future<dynamic>)
-                  .then((model) => {
-                        group.add(model),
-                        if (++archiveFiles == archive.files.length)
-                          {scene.add(group), setView(group), animate()}
-                      });
-            });
-          })
+    // object = await loader.loadAsync('assets/megahull.obj');
+    // scene.add(object);
+    // setView(object);
+    // animate();
+
+    fetchFiles(widget.url).then((archive) => {
+      setState(() {
+        var group = three.Group();
+        var archiveFiles = 0;
+        archive.files.forEach((file) {
+          var decode = utf8.decode(file.content);
+          List<String> split;
+          List<String> formatted = List.empty(growable: true);
+          decode.split('\n').forEach((line) => {
+            split = line.split(' '),
+            if (split.isNotEmpty && split.elementAt(0) == 'v')
+              {formatted.add(line)}
+            else if (split.isNotEmpty && split.elementAt(0) == 'f')
+              {
+                formatted.add(List.from([
+                  'f',
+                  split.elementAt(1).replaceAll("/", "//"),
+                  split.elementAt(2).replaceAll("/", "//"),
+                  split.elementAt(3).replaceAll("/", "//")
+                ]).join(' ')),
+              }
+            else if (line.trim() == "")
+                {}
+              else
+                {formatted.add(line)}
+          });
+
+          (loader.parse(formatted.join('\n')) as Future<dynamic>)
+              .then((model) => {
+            group.add(model),
+            if (++archiveFiles == archive.files.length)
+              {scene.add(group), setView(group), animate()}
+          });
         });
+      })
+    });
+
+    // scene.addEventListener('resize', initPlatformState);
+    //
+    // controls.touches = {
+    //   'ONE': three.TOUCH.ROTATE,
+    //   'TWO': three.TOUCH.DOLLY_PAN
+    // };
   }
 
   animate() {
@@ -286,8 +308,7 @@ class _ThreeRender extends State<ThreeRender> {
     }
 
     render();
-
-    Future.delayed(const Duration(milliseconds: 40), () {
+    Future.delayed(const Duration(milliseconds: 10), () {
       animate();
     });
   }
@@ -298,6 +319,8 @@ class _ThreeRender extends State<ThreeRender> {
 
     disposed = true;
     three3dRender.dispose();
+
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
     super.dispose();
   }
@@ -332,6 +355,11 @@ class _ThreeRender extends State<ThreeRender> {
 
     camera.position.copy(controls.target).sub(direction);
 
+    axes = three.AxesHelper(camera.far);
+    localToCameraAxesPlacement = controls.target;
+    scene.add(axes);
+
     controls.update();
+    // axesControls.update();
   }
 }
