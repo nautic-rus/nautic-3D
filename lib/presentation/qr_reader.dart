@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:nautic_viewer/data/api/zipobject_services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'render.dart';
+import 'documentfromscanner.dart';
 
 class QrReader extends StatefulWidget {
   const QrReader({Key? key}) : super(key: key);
@@ -64,7 +65,7 @@ class _QrReaderState extends State<QrReader> {
       padding: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: Colors.white24,
+        color: Colors.deepPurple.shade400,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -117,10 +118,10 @@ class _QrReaderState extends State<QrReader> {
       key: qrKey,
       onQRViewCreated: _onQRViewCreated,
       overlay: QrScannerOverlayShape(
-        borderColor: Colors.white,
+        borderColor: Colors.deepPurple.shade400,
         borderRadius: 10,
         borderLength: 30,
-        borderWidth: 10,
+        borderWidth: 15,
         cutOutSize: MediaQuery.of(context).size.width * 0.7,
       ),
     );
@@ -136,14 +137,20 @@ class _QrReaderState extends State<QrReader> {
         await launch(barcode.code.toString());
         controller.resumeCamera();
       } else {
-        setState(() {
+        setState(() async {
           this.barcode = barcode;
-          Navigator.of(context)
-              .push(MaterialPageRoute(
-                  builder: (context) =>
-                      ThreeRender(url: barcode.code.toString())))
-              .then((value) => controller.resumeCamera());
+          if (validateUrl(barcode.code.toString())) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(
+                    builder: (context) =>
+                        Document(url: barcode.code.toString())))
+                .then((value) => controller.resumeCamera());
+          } else {
+            await _dialogBuilder(context);
+            controller.resumeCamera();
+          }
         });
+
         print(barcode.code);
       }
     });
@@ -156,5 +163,31 @@ class _QrReaderState extends State<QrReader> {
   void dispose() {
     controller?.dispose();
     super.dispose();
+  }
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: const Text(
+            'This QR code is not valid',
+            style: TextStyle(fontSize: 18),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Ok', style: TextStyle(fontSize: 18)),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

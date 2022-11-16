@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> isInternetConnected() async {
     try {
-      final result = await InternetAddress.lookup('google.com');
+      final result = await InternetAddress.lookup('deep-sea.ru');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         print('connected');
         return true;
@@ -56,15 +56,15 @@ class _SplashScreenState extends State<SplashScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Сообщение'),
+          title: const Text('Message'),
           content: const Text(
-              'Подключение к интернету отсутствует, функции приложения ограничены'),
+              'Internet connection is not available, application functions are limited'),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: const Text('Ок'),
+              child: const Text('Ok'),
               onPressed: () {
                 Navigator.pushReplacement(
                     context, MaterialPageRoute(builder: (context) => Home()));

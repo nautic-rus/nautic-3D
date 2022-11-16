@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:nautic_viewer/presentation/render.dart';
+import 'package:nautic_viewer/presentation/select_spool.dart';
+
+import '../data/api/zipobject_services.dart';
+
+class Document extends StatefulWidget {
+  Document({Key? key, required this.url}) : super(key: key);
+
+  String url;
+
+  @override
+  State<Document> createState() => _DocumentState();
+}
+
+class _DocumentState extends State<Document> {
+  var data;
+  var currentDocNumber;
+  var currentSpool;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    data = getData(widget.url);
+    currentDocNumber = data[0];
+    currentSpool = data[1];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return data.isEmpty
+        ? Scaffold(
+            body: Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.deepPurple,
+                    size: MediaQuery.of(context).size.width * 0.2)),
+          )
+        : Scaffold(
+            appBar: AppBar(
+              title: Text("Document"),
+            ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Information from QR code",
+                          style: TextStyle(fontSize: 20)),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Text("Document: $currentDocNumber",
+                                  style: TextStyle(fontSize: 16)),
+                              Text("Spool: $currentSpool",
+                                  style: TextStyle(fontSize: 16))
+                            ],
+                          ),
+                          Image.asset(
+                            "assets/qr.png",
+                            width: MediaQuery.of(context).size.width * 0.2,
+                            height: MediaQuery.of(context).size.width * 0.2,
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.07,
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  ThreeRender(url: widget.url)));
+                        });
+                      },
+                      child: Text("Display this spool"),
+                      style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 20)),
+                    )),
+                Container(
+                  child: Text(
+                    "Spools in this document",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  child: SelectSpool(docNumber: currentDocNumber),
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  width: MediaQuery.of(context).size.width,
+                  alignment: Alignment.center,
+                ),
+                SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.07,
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child: Text("Display all spools"),
+                      style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 20)),
+                    ))
+              ],
+            ),
+          );
+  }
+}

@@ -61,6 +61,7 @@ class _ThreeRender extends State<ThreeRender> {
   var currentDocNumber;
   var nextSpoolIndex;
   var previousSpoolNumber;
+  var addingSpool;
 
   @override
   void initState() {
@@ -68,6 +69,7 @@ class _ThreeRender extends State<ThreeRender> {
     data = getData(widget.url);
     currentDocNumber = data[0];
     currentSpool = data[1];
+    addingSpool = currentSpool;
 
     parseSpool(currentDocNumber).then((value) => {
           setState(() {
@@ -93,7 +95,7 @@ class _ThreeRender extends State<ThreeRender> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(appBarHeight),
         child: AppBar(
-          title: Text("render"),
+          title: Text("3D viewer"),
         ),
       ),
       body: Builder(
@@ -118,7 +120,7 @@ class _ThreeRender extends State<ThreeRender> {
                   return Container(
                       width: width,
                       height: height,
-                      color: Colors.black,
+                      color: Colors.white,
                       child: Builder(builder: (BuildContext context) {
                         if (kIsWeb) {
                           return three3dRender.isInitialized
@@ -136,12 +138,23 @@ class _ThreeRender extends State<ThreeRender> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  SizedBox(
+                    width: width,
+                    height: height / 10.0,
+                    child: Column(
+                      children: <Widget>[
+                        Text("Document: $currentDocNumber"),
+                        Text("Spool: $currentSpool"),
+                        Text("Adding spool: $addingSpool")
+                      ],
+                    ),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       SizedBox(
-                          height: height / 2.0,
+                          height: height * 4.5 / 10.0,
                           width: width * 0.1,
                           child: TextButton(
                             onPressed: () => previousSpool(),
@@ -155,7 +168,7 @@ class _ThreeRender extends State<ThreeRender> {
                             ),
                           )),
                       SizedBox(
-                          height: height / 2.0,
+                          height: height * 4.5 / 10.0,
                           width: width * 0.1,
                           child: TextButton(
                             onPressed: () => nextSpool(),
@@ -175,7 +188,7 @@ class _ThreeRender extends State<ThreeRender> {
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       SizedBox(
-                          height: height / 2.0,
+                          height: height * 4.5 / 10.0,
                           width: width * 0.1,
                           child: TextButton(
                             onPressed: () => addPreviousSpool(),
@@ -189,7 +202,7 @@ class _ThreeRender extends State<ThreeRender> {
                             ),
                           )),
                       SizedBox(
-                          height: height / 2.0,
+                          height: height * 4.5 / 10.0,
                           width: width * 0.1,
                           child: TextButton(
                             onPressed: () => addNextSpool(),
@@ -216,6 +229,9 @@ class _ThreeRender extends State<ThreeRender> {
   nextSpool() {
     currentSpoolIndex++;
     data[1] = spoolsList[currentSpoolIndex];
+    currentSpool = data[1];
+    nextSpoolIndex = currentSpoolIndex;
+    addingSpool = currentSpool;
     widget.url = getUrl(data);
     replaceObjScene();
     print(widget.url);
@@ -224,6 +240,9 @@ class _ThreeRender extends State<ThreeRender> {
   previousSpool() {
     currentSpoolIndex--;
     data[1] = spoolsList[currentSpoolIndex];
+    currentSpool = data[1];
+    nextSpoolIndex = currentSpoolIndex;
+    addingSpool = currentSpool;
     widget.url = getUrl(data);
     replaceObjScene();
     print(widget.url);
@@ -232,6 +251,7 @@ class _ThreeRender extends State<ThreeRender> {
   addNextSpool() {
     nextSpoolIndex++;
     data[1] = spoolsList[nextSpoolIndex];
+    addingSpool = data[1];
     widget.url = getUrl(data);
     addObjScene();
     print(widget.url);
@@ -240,6 +260,7 @@ class _ThreeRender extends State<ThreeRender> {
   addPreviousSpool() {
     previousSpoolNumber--;
     data[1] = spoolsList[previousSpoolNumber];
+    addingSpool = data[1];
     widget.url = getUrl(data);
     addObjScene();
     print(widget.url);

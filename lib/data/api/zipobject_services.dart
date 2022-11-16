@@ -26,6 +26,17 @@ getData(String url) {
   return data;
 }
 
+validateUrl(String url) {
+  var data = getData(url);
+  if (data[0] == "" || data[1] == "") {
+    print("nononnonnononon");
+    return false;
+  } else {
+    print("yeyseysyeysyeyse");
+    return true;
+  }
+}
+
 getUrl(List data) {
   var url =
       'https://deep-sea.ru/rest-spec/spoolFiles?docNumber=${data[0]}&spool=${data[1]}&isom=${data[2]}';

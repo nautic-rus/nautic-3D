@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nautic_viewer/presentation/qr_reader.dart';
-import 'package:nautic_viewer/presentation/selectmodel.dart';
+import 'package:nautic_viewer/presentation/select_spool.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -35,22 +35,24 @@ class _HomeState extends State<Home> {
               child: Column(
                 children: <Widget>[
                   ListTile(
-                    title: Text("Выбор модели"),
+                    title: Text("Spool selection"),
                     leading: Icon(Icons.directions_boat),
                     onTap: () {
                       setState(() {
-                        titleAppBar = Text("Выбор модели");
+                        titleAppBar = Text("Spool selection");
                         Navigator.pop(context);
-                        body = SelectModel();
+                        body = SelectSpool(
+                          docNumber: "210101-819-0001",
+                        );
                       });
                     },
                   ),
                   ListTile(
-                    title: Text("QR сканнер"),
+                    title: Text("QR scanner"),
                     leading: Icon(Icons.qr_code_scanner),
                     onTap: () {
                       setState(() {
-                        titleAppBar = Text("QR сканнер");
+                        titleAppBar = Text("QR scanner");
                         Navigator.pop(context);
                         body = QrReader();
                       });
@@ -61,13 +63,13 @@ class _HomeState extends State<Home> {
                     icon: Icon(
                       Icons.info,
                     ),
-                    child: Text('О приложении'),
+                    child: Text('About application'),
                     applicationIcon: Icon(
                       Icons.local_play,
                     ),
                     applicationName: 'Nautic 3D',
-                    applicationVersion: '1.1.0',
-                    applicationLegalese: '© 2022 Наутик Рус',
+                    applicationVersion: '1.3.1',
+                    applicationLegalese: '© 2022 Nautic Rus',
                   ),
                 ],
               ),
@@ -80,13 +82,9 @@ class _HomeState extends State<Home> {
 
   Widget body = Scaffold(
     body: Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/sea.jpg"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: null,
+      alignment: Alignment.center,
+      color: Color.fromARGB(254, 254, 254, 255),
+      child: Image.asset("assets/giphy.gif"),
     ),
   );
 }
