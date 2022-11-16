@@ -319,7 +319,7 @@ class _SelectModel extends State<StatefulWidget> {
                                 }),
                           ]),
                     isActive: _index == 3,
-                    state: _index == 3 ? StepState.complete : StepState.disabled,
+                    state: _index == 4 ? StepState.complete : StepState.disabled,
                   ),
                 ],
               ),

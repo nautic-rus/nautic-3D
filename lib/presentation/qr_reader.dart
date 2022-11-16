@@ -1,11 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'double_camera.dart';
 import 'render.dart';
 
 class QrReader extends StatefulWidget {
@@ -39,7 +37,7 @@ class _QrReaderState extends State<QrReader> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-       controller!.pauseCamera();
+      controller!.pauseCamera();
     }
     controller!.resumeCamera();
   }
