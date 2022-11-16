@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nautic_viewer/presentation/qr_reader.dart';
-import 'package:nautic_viewer/presentation/rest_page.dart';
+import 'package:nautic_viewer/presentation/selectmodel.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -10,12 +10,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  var titleAppBar = Text("Nautic 3D");
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Nautic 3D"),
+        title: titleAppBar,
       ),
       body: Center(
         child: Container(
@@ -34,25 +35,40 @@ class _HomeState extends State<Home> {
               child: Column(
                 children: <Widget>[
                   ListTile(
-                    title: Text("Rest"),
-                    leading: Icon(Icons.api),
+                    title: Text("Выбор модели"),
+                    leading: Icon(Icons.directions_boat),
                     onTap: () {
                       setState(() {
+                        titleAppBar = Text("Выбор модели");
                         Navigator.pop(context);
-                        body = RestPage();
+                        body = SelectModel();
                       });
                     },
                   ),
                   ListTile(
-                    title: Text("QrReader"),
-                    leading: Icon(Icons.hourglass_full),
+                    title: Text("QR сканнер"),
+                    leading: Icon(Icons.qr_code_scanner),
                     onTap: () {
                       setState(() {
+                        titleAppBar = Text("QR сканнер");
                         Navigator.pop(context);
                         body = QrReader();
                       });
                     },
-                  )
+                  ),
+                  AboutListTile(
+                    // <-- SEE HERE
+                    icon: Icon(
+                      Icons.info,
+                    ),
+                    child: Text('О приложении'),
+                    applicationIcon: Icon(
+                      Icons.local_play,
+                    ),
+                    applicationName: 'Nautic 3D',
+                    applicationVersion: '1.1.0',
+                    applicationLegalese: '© 2022 Наутик Рус',
+                  ),
                 ],
               ),
             )

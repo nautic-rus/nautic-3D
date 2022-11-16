@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../presentation/home.dart';
+import '../presentation/selectmodel.dart';
 import '../presentation/splash_screen.dart';
 
 class Application extends StatelessWidget {

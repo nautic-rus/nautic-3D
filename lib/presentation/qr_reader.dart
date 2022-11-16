@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'double_camera.dart';
 import 'render.dart';
 
 class QrReader extends StatefulWidget {
@@ -37,7 +39,7 @@ class _QrReaderState extends State<QrReader> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller!.pauseCamera();
+       controller!.pauseCamera();
     }
     controller!.resumeCamera();
   }
@@ -46,17 +48,17 @@ class _QrReaderState extends State<QrReader> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-          body: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              buildQrView(context),
-              Positioned(
-                child: buildControlButtons(),
-                bottom: 40,
-              )
-            ],
-          ),
-        ));
+      body: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          buildQrView(context),
+          Positioned(
+            child: buildControlButtons(),
+            bottom: 40,
+          )
+        ],
+      ),
+    ));
   }
 
   Widget buildControlButtons() {
@@ -117,7 +119,7 @@ class _QrReaderState extends State<QrReader> {
       key: qrKey,
       onQRViewCreated: _onQRViewCreated,
       overlay: QrScannerOverlayShape(
-        borderColor: Colors.deepPurple.shade400,
+        borderColor: Colors.white,
         borderRadius: 10,
         borderLength: 30,
         borderWidth: 10,
@@ -140,8 +142,8 @@ class _QrReaderState extends State<QrReader> {
           this.barcode = barcode;
           Navigator.of(context)
               .push(MaterialPageRoute(
-              builder: (context) =>
-                  ThreeRender(url: barcode.code.toString())))
+                  builder: (context) =>
+                      ThreeRender(url: barcode.code.toString())))
               .then((value) => controller.resumeCamera());
         });
         print(barcode.code);
