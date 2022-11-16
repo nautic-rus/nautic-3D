@@ -385,6 +385,8 @@ class _ThreeRender extends State<ThreeRender> {
     group = three.Group();
 
     loadObjFromZip();
+
+    animate();
   }
 
   addObjScene() {
@@ -435,7 +437,7 @@ class _ThreeRender extends State<ThreeRender> {
                   .then((model) => {
                         group.add(model),
                         if (++archiveFiles == archive.files.length)
-                          {scene.add(group), animate()}
+                          {scene.add(group)}
                       });
             });
           })
@@ -478,7 +480,7 @@ class _ThreeRender extends State<ThreeRender> {
                   .then((model) => {
                         group.add(model),
                         if (++archiveFiles == archive.files.length)
-                          {scene.add(group), setView(group), animate()}
+                          {scene.add(group), setView(group)}
                       });
             });
           })

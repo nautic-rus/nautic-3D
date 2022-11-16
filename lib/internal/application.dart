@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../presentation/home.dart';
+import '../presentation/splash_screen.dart';
 
 class Application extends StatelessWidget {
   const Application({Key? key}) : super(key: key);
@@ -10,10 +11,10 @@ class Application extends StatelessWidget {
     return MaterialApp(
       title: 'Nautic 3D',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: Home(),
+          primarySwatch: Colors.deepPurple,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          useMaterial3: true),
+      home: SplashScreen(),
     );
   }
 }
