@@ -5,7 +5,9 @@ import 'package:nautic_viewer/data/api/zipobject_services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../internal/local_files.dart';
 import 'documentfromscanner.dart';
+import 'home.dart';
 
 class QrReader extends StatefulWidget {
   const QrReader({Key? key}) : super(key: key);
@@ -45,9 +47,7 @@ class _QrReaderState extends State<QrReader> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-      body: Stack(
+    return Stack(
         alignment: Alignment.center,
         children: <Widget>[
           buildQrView(context),
@@ -56,8 +56,7 @@ class _QrReaderState extends State<QrReader> {
             bottom: 40,
           )
         ],
-      ),
-    ));
+    );
   }
 
   Widget buildControlButtons() {
@@ -140,6 +139,7 @@ class _QrReaderState extends State<QrReader> {
         setState(() async {
           this.barcode = barcode;
           if (validateUrl(barcode.code.toString())) {
+            saveLastScanUrl(barcode.code.toString());
             Navigator.of(context)
                 .push(MaterialPageRoute(
                     builder: (context) =>

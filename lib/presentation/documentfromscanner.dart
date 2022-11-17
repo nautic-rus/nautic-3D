@@ -4,6 +4,7 @@ import 'package:nautic_viewer/presentation/render.dart';
 import 'package:nautic_viewer/presentation/select_spool.dart';
 
 import '../data/api/zipobject_services.dart';
+import '../internal/scandata.dart';
 
 class Document extends StatefulWidget {
   Document({Key? key, required this.url}) : super(key: key);
@@ -52,27 +53,7 @@ class _DocumentState extends State<Document> {
                     children: [
                       Text("Information from QR code",
                           style: TextStyle(fontSize: 20)),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Text("Document: $currentDocNumber",
-                                  style: TextStyle(fontSize: 16)),
-                              Text("Spool: $currentSpool",
-                                  style: TextStyle(fontSize: 16))
-                            ],
-                          ),
-                          Image.asset(
-                            "assets/qr.png",
-                            width: MediaQuery.of(context).size.width * 0.2,
-                            height: MediaQuery.of(context).size.width * 0.2,
-                          )
-                        ],
-                      ),
+                      ScanData(url: widget.url)
                     ],
                   ),
                 ),

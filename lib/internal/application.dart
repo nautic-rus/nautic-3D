@@ -11,9 +11,10 @@ class Application extends StatelessWidget {
       title: 'Nautic 3D',
       theme: ThemeData(
           brightness: Brightness.light,
-          primaryColor: Colors.lightBlue,
-          accentColor: Colors.green,
+          primaryColor: Colors.white,
           primarySwatch: Colors.deepPurple,
+          primaryColorLight: Colors.white,
+          primaryColorDark: Colors.white,
           useMaterial3: true),
       home: SplashScreen(),
     );

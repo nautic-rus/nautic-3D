@@ -43,6 +43,12 @@ class _SelectSpool extends State<SelectSpool> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(0),
+        child: AppBar(
+          backgroundColor: Colors.white,
+        ),
+      ),
       body: spoolsList.isEmpty
           ? Scaffold(
               body: Center(

@@ -29,10 +29,8 @@ getData(String url) {
 validateUrl(String url) {
   var data = getData(url);
   if (data[0] == "" || data[1] == "") {
-    print("nononnonnononon");
     return false;
   } else {
-    print("yeyseysyeysyeyse");
     return true;
   }
 }

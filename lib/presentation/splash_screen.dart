@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../internal/navigation.dart';
 import 'home.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (isInternetAvailable) {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Home()));
+          context, MaterialPageRoute(builder: (context) => Navigation()));
     } else {
       await _dialogBuilder(context);
     }
@@ -67,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
               child: const Text('Ok'),
               onPressed: () {
                 Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => Home()));
+                    context, MaterialPageRoute(builder: (context) => Navigation()));
               },
             ),
           ],
