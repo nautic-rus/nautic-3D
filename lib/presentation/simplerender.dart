@@ -85,6 +85,7 @@ class _SimpleRender extends State<SimpleRender> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onDoubleTap: () {},
+      onDoubleTapDown: (details) => onPointer(details),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
@@ -159,6 +160,30 @@ class _SimpleRender extends State<SimpleRender> {
         ),
       ],
     );
+  }
+
+  onPointer(details) {
+    setState(() {
+      state = false;
+    });
+    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1.05;
+    var y = -(details.globalPosition.dy / screenSize!.height) * 2 + 1.1;
+    var dir = three.Vector3(x, y);
+    print(x);
+    print(y);
+    dir.unproject(camera);
+
+    var ray =
+    three.Raycaster(camera.position, dir.sub(camera.position).normalize());
+    var intersects = ray.intersectObjects(scene.children, true);
+
+    if (intersects.isNotEmpty) {
+      print("hit");
+      for (var i = 0; i < intersects.length; i++) {
+        intersects[0].object.material.color.set(0xff0000);
+      }
+    }
+    state = true;
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -258,7 +283,7 @@ class _SimpleRender extends State<SimpleRender> {
     scene = three.Scene();
 
     camera = three.PerspectiveCamera(50, aspect, 1, 10000);
-    camera.position.set(0, 1, 0);
+    camera.position.set(-1, 1, 1);
     scene.add(camera);
     scene.background = three.Color(0xA6A6A6);
 
@@ -281,6 +306,7 @@ class _SimpleRender extends State<SimpleRender> {
 
     axes = three.AxesHelper(100000);
     localToCameraAxesPlacement = controls.target;
+    axes.rotation.x = -Math.PI / 2;
     scene.add(axes);
 
     controls.update();
@@ -290,10 +316,6 @@ class _SimpleRender extends State<SimpleRender> {
     loadObjFromZip();
 
     animate();
-  }
-
-  myOnMouseDownFunction(evt) {
-    print("click $evt");
   }
 
   addObjScene() {
@@ -353,6 +375,7 @@ class _SimpleRender extends State<SimpleRender> {
   }
 
   setView(three.Object3D object) {
+    object.rotation.x = -Math.PI / 2;
     boundingBox.expandByObject(object);
 
     //boundingBox = three.Box3().setFromObject(object);

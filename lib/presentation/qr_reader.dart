@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../internal/local_files.dart';
 import 'documentfromscanner.dart';
-import 'home.dart';
 
 class QrReader extends StatefulWidget {
   const QrReader({Key? key}) : super(key: key);

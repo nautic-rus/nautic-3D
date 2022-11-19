@@ -46,10 +46,13 @@ class _ThreeRender extends State<ThreeRender> {
   late three.Group group;
 
   three.Box3 boundingBox = three.Box3();
+  three.Box3 reBox = three.Box3();
 
   num aspect = 2.0;
   double dpr = 1.0;
   late int index;
+
+  three.Object3D INTERSECTED = three.Object3D();
 
   bool state = false;
 
@@ -248,7 +251,7 @@ class _ThreeRender extends State<ThreeRender> {
     setState(() {
       state = false;
     });
-    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1.1;
+    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1.05;
     var y = -(details.globalPosition.dy / screenSize!.height) * 2 + 1.1;
     var dir = three.Vector3(x, y);
     print(x);
@@ -256,16 +259,30 @@ class _ThreeRender extends State<ThreeRender> {
     dir.unproject(camera);
 
     var ray =
-    three.Raycaster(camera.position, dir.sub(camera.position).normalize());
+        three.Raycaster(camera.position, dir.sub(camera.position).normalize());
     var intersects = ray.intersectObjects(scene.children, true);
 
     if (intersects.isNotEmpty) {
-      print("hit");
-      for (var i = 0; i < intersects.length; i++) {
-        intersects[0].object.material.color.set(0xff0000);
+      if (INTERSECTED != intersects[0].object) {
+        print("defferent");
+        INTERSECTED = intersects[0].object;
+
+        for (var i = 0; i < intersects.length; i++) {
+          //intersects[0].object.material.color.set(0xff0000);
+          scaleView(intersects[0].object);
+          updateSpoolInfo(intersects[0].object.parent?.parent?.name);
+        }
+        print("hit");
       }
     }
     state = true;
+  }
+
+  updateSpoolInfo(var spool) {
+    setState(() {
+      currentSpool = spool;
+      addingSpool = spool;
+    });
   }
 
   nextSpool() {
@@ -280,7 +297,7 @@ class _ThreeRender extends State<ThreeRender> {
         previousSpoolIndex = currentSpoolIndex;
         addingSpool = currentSpool;
         widget.url = getUrl(data);
-        replaceObjScene();
+        replaceObjScene(currentSpool);
         print(widget.url);
       } else {
         state = true;
@@ -300,7 +317,7 @@ class _ThreeRender extends State<ThreeRender> {
         previousSpoolIndex = currentSpoolIndex;
         addingSpool = currentSpool;
         widget.url = getUrl(data);
-        replaceObjScene();
+        replaceObjScene(currentSpool);
         print(widget.url);
       } else {
         state = true;
@@ -317,7 +334,7 @@ class _ThreeRender extends State<ThreeRender> {
       if (addingSpool != data[1]) {
         addingSpool = data[1];
         widget.url = getUrl(data);
-        addObjScene();
+        addObjScene(addingSpool);
         print(widget.url);
       } else {
         state = true;
@@ -334,7 +351,7 @@ class _ThreeRender extends State<ThreeRender> {
       if (addingSpool != data[1]) {
         addingSpool = data[1];
         widget.url = getUrl(data);
-        addObjScene();
+        addObjScene(addingSpool);
         print(widget.url);
       } else {
         state = true;
@@ -460,7 +477,7 @@ class _ThreeRender extends State<ThreeRender> {
     scene = three.Scene();
 
     camera = three.PerspectiveCamera(50, aspect, 1, 10000);
-    camera.position.set(0, 1, 0);
+    camera.position.set(-1, 1, 1);
     scene.add(camera);
     scene.background = three.Color(0xA6A6A6);
 
@@ -483,35 +500,32 @@ class _ThreeRender extends State<ThreeRender> {
 
     axes = three.AxesHelper(100000);
     localToCameraAxesPlacement = controls.target;
+    axes.rotation.x = -Math.PI / 2;
     scene.add(axes);
 
     controls.update();
 
     group = three.Group();
 
-    loadObjFromZip();
+    loadObjFromZip(currentSpool);
 
     animate();
   }
 
-  myOnMouseDownFunction(evt) {
-    print("click $evt");
+  addObjScene(String name) {
+    loadObjFromZip(name);
   }
 
-  addObjScene() {
-    loadObjFromZip();
-  }
-
-  replaceObjScene() {
+  replaceObjScene(String name) {
     boundingBox = three.Box3();
     for (var i = scene.children.length - 1; i >= 0; i--) {
       var obj = scene.children[i];
       if (obj.type == 'Group') scene.remove(obj);
     }
-    loadObjFromZip();
+    loadObjFromZip(name);
   }
 
-  loadObjFromZip() {
+  loadObjFromZip(String name) {
     var loader = three_jsm.OBJLoader(null);
     bool first = true;
 
@@ -519,6 +533,8 @@ class _ThreeRender extends State<ThreeRender> {
           // scene.clear(),
           setState(() {
             group = three.Group();
+            group.name = name;
+            print(group.name);
             var archiveFiles = 0;
             archive.files.forEach((file) {
               var decode = utf8.decode(file.content);
@@ -547,22 +563,31 @@ class _ThreeRender extends State<ThreeRender> {
                   .then((model) => {
                         group.add(model),
                         if (++archiveFiles == archive.files.length)
-                          {scene.add(group), setView(group)}
+                          {scene.add(group), addToView(group)}
                       });
             });
           })
         });
   }
 
-  setView(three.Object3D object) {
+  addToView(three.Object3D object) {
+    object.rotation.x = -Math.PI / 2;
     boundingBox.expandByObject(object);
+    setView(boundingBox);
+  }
 
+  scaleView(three.Object3D object) {
+    reBox = three.Box3().setFromObject(object);
+    setView(reBox);
+  }
+
+  setView(three.Box3 box) {
     //boundingBox = three.Box3().setFromObject(object);
 
     var center = three.Vector3();
     var size = three.Vector3();
-    boundingBox.getCenter(center);
-    boundingBox.getSize(size);
+    box.getCenter(center);
+    box.getSize(size);
 
     var fitOffset = 1.2;
     var maxSize = Math.max(size.x, Math.max(size.y, size.z));
@@ -577,7 +602,6 @@ class _ThreeRender extends State<ThreeRender> {
         .normalize()
         .multiplyScalar(distance);
 
-    controls.maxDistance = distance * 10;
     controls.target.copy(center);
 
     camera.near = distance / 100;
