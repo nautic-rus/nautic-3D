@@ -98,10 +98,7 @@ class _ThreeRender extends State<ThreeRender> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: () {},
-      onDoubleTapDown: (details) => onPointer(details),
-      child: Scaffold(
+    return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(appBarHeight),
@@ -109,16 +106,18 @@ class _ThreeRender extends State<ThreeRender> {
             title: Text("3D viewer"),
           ),
         ),
-        body: Builder(
-          builder: (BuildContext context) {
-            initSize(context);
-            return Container(
-              child: _build(context),
-            );
-          },
-        ),
-      ),
-    );
+        body: GestureDetector(
+          onDoubleTap: () {},
+          onDoubleTapDown: (details) => onPointer(details),
+          child: Builder(
+            builder: (BuildContext context) {
+              initSize(context);
+              return Container(
+                child: _build(context),
+              );
+            },
+          ),
+        ));
   }
 
   Widget _build(BuildContext context) {
@@ -148,89 +147,129 @@ class _ThreeRender extends State<ThreeRender> {
                 }),
             Positioned(
               child: state
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        SizedBox(
-                          width: width,
-                          height: height / 10.0,
-                          child: Column(
-                            children: <Widget>[
-                              Text("Document: $currentDocNumber"),
-                              Text("Spool: $currentSpool"),
-                              Text("Adding spool: $addingSpool")
-                            ],
+                  ? Container(
+                      width: width,
+                      height: height,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white54,
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(50),
+                                  bottomRight: Radius.circular(50)),
+                            ),
+                            child: SizedBox(
+                              width: width,
+                              height: height / 10.0,
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Document: $currentDocNumber",
+                                      style: TextStyle(fontSize: 20),
+                                      textAlign: TextAlign.center),
+                                  Text(
+                                      "Spool: $currentSpool | Adding spool: $addingSpool",
+                                      style: TextStyle(fontSize: 20),
+                                      textAlign: TextAlign.center),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          mainAxisSize: MainAxisSize.max,
-                          children: <Widget>[
-                            SizedBox(
-                                height: height * 4.5 / 10.0,
-                                width: width * 0.1,
-                                child: TextButton(
-                                  onPressed: () => previousSpool(),
-                                  child: RotatedBox(
-                                    quarterTurns: 1,
-                                    child: Text("Previous"),
+                          Column(
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  SizedBox(
+                                      height: width * 0.15,
+                                      width: width * 0.2,
+                                      child: IconButton(
+                                        onPressed: () => previousSpool(),
+                                        icon: Icon(Icons.arrow_back_ios),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: Colors.white54,
+                                          primary: Colors.black,
+                                          onSurface: Colors.white,
+                                        ),
+                                      )),
+                                  Container(
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 20),
+                                    height: width * 0.15,
+                                    width: width * 0.15,
+                                    child: IconButton(
+                                      onPressed: () => {setView(boundingBox)},
+                                      icon: Icon(Icons.center_focus_strong),
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: Colors.white54,
+                                        primary: Colors.black,
+                                        onSurface: Colors.white,
+                                      ),
+                                    ),
                                   ),
-                                  style: TextButton.styleFrom(
-                                    primary: Colors.black,
-                                    onSurface: Colors.white,
-                                  ),
-                                )),
-                            SizedBox(
-                                height: height * 4.5 / 10.0,
-                                width: width * 0.1,
-                                child: TextButton(
-                                  onPressed: () => nextSpool(),
-                                  child: RotatedBox(
-                                    quarterTurns: 1,
-                                    child: Text("Next"),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    primary: Colors.black,
-                                    onSurface: Colors.white,
-                                  ),
-                                )),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          mainAxisSize: MainAxisSize.max,
-                          children: <Widget>[
-                            SizedBox(
-                                height: height * 4.5 / 10.0,
-                                width: width * 0.1,
-                                child: TextButton(
-                                  onPressed: () => addPreviousSpool(),
-                                  child: RotatedBox(
-                                    quarterTurns: 1,
-                                    child: Text("Add previous"),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    primary: Colors.black,
-                                    onSurface: Colors.white,
-                                  ),
-                                )),
-                            SizedBox(
-                                height: height * 4.5 / 10.0,
-                                width: width * 0.1,
-                                child: TextButton(
-                                  onPressed: () => addNextSpool(),
-                                  child: RotatedBox(
-                                    quarterTurns: 1,
-                                    child: Text("Add next"),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    primary: Colors.black,
-                                    onSurface: Colors.white,
-                                  ),
-                                )),
-                          ],
-                        )
-                      ],
+                                  RotatedBox(
+                                    quarterTurns: 2,
+                                    child: SizedBox(
+                                        height: width * 0.15,
+                                        width: width * 0.2,
+                                        child: IconButton(
+                                          onPressed: () => nextSpool(),
+                                          icon: Icon(Icons.arrow_back_ios),
+                                          style: TextButton.styleFrom(
+                                            backgroundColor: Colors.white54,
+                                            primary: Colors.black,
+                                            onSurface: Colors.white,
+                                          ),
+                                        )),
+                                  )
+                                ],
+                              ),
+                              SizedBox(
+                                height: height * 0.01, // <-- SEE HERE
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  SizedBox(
+                                      height: width * 0.15,
+                                      width: width / 2.5,
+                                      child: TextButton(
+                                        onPressed: () => addPreviousSpool(),
+                                        child: Text("+ prev spool",
+                                            style: TextStyle(fontSize: 20)),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: Colors.white54,
+                                          primary: Colors.black,
+                                          onSurface: Colors.white,
+                                        ),
+                                      )),
+                                  SizedBox(
+                                      height: width * 0.15,
+                                      width: width / 2.5,
+                                      child: TextButton(
+                                        onPressed: () => addNextSpool(),
+                                        child: Text("+ next spool",
+                                            style: TextStyle(fontSize: 20)),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: Colors.white54,
+                                          primary: Colors.black,
+                                          onSurface: Colors.white,
+                                        ),
+                                      )),
+                                ],
+                              ),
+                              SizedBox(
+                                height: height * 0.01, // <-- SEE HERE
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
                     )
                   : Container(
                       width: width,
@@ -251,8 +290,8 @@ class _ThreeRender extends State<ThreeRender> {
     setState(() {
       state = false;
     });
-    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1.05;
-    var y = -(details.globalPosition.dy / screenSize!.height) * 2 + 1.1;
+    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1;
+    var y = -(details.globalPosition.dy / screenSize!.height) * 2 + 1;
     var dir = three.Vector3(x, y);
     print(x);
     print(y);
@@ -264,25 +303,28 @@ class _ThreeRender extends State<ThreeRender> {
 
     if (intersects.isNotEmpty) {
       if (INTERSECTED != intersects[0].object) {
+        scene.children.forEach((gr) => {
+              if (gr.type == 'Group')
+                {
+                  gr.children.forEach((ch) => {
+                        ch.children.forEach((mesh) {
+                          mesh.material.color.set(0xffffff);
+                        })
+                      })
+                }
+            });
         print("defferent");
         INTERSECTED = intersects[0].object;
 
         for (var i = 0; i < intersects.length; i++) {
-          //intersects[0].object.material.color.set(0xff0000);
+          intersects[0].object.material.color.set(0x9D7E7E);
           scaleView(intersects[0].object);
-          updateSpoolInfo(intersects[0].object.parent?.parent?.name);
+          currentSpool = intersects[0].object.parent?.parent?.name;
         }
         print("hit");
       }
     }
     state = true;
-  }
-
-  updateSpoolInfo(var spool) {
-    setState(() {
-      currentSpool = spool;
-      addingSpool = spool;
-    });
   }
 
   nextSpool() {

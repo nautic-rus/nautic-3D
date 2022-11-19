@@ -6,7 +6,6 @@ import '../data/api/zipobject_services.dart';
 import '../internal/local_files.dart';
 import '../internal/scandata.dart';
 import 'documentfromscanner.dart';
-import 'double_camera.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -19,6 +18,11 @@ class _HomeState extends State<Home> {
   String url = "";
   late Future<dynamic> urlFuture = getLastScanUrl();
 
+  late double width;
+  late double height;
+  late double unitHeightValue;
+  late double multiplier;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -28,10 +32,11 @@ class _HomeState extends State<Home> {
         }));
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: Container(
           alignment: Alignment.center,
@@ -44,83 +49,95 @@ class _HomeState extends State<Home> {
           child: SafeArea(
             child: Column(
               children: <Widget>[
+                SizedBox(
+                  height: height * 0.05, // <-- SEE HERE
+                ),
                 Container(
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    height: MediaQuery.of(context).size.height * 0.2,
-                    margin:
-                        EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
+                    width: width * 0.55,
+                    height: height * 0.2,
                     alignment: Alignment.bottomCenter,
                     child:
                         SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")),
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  margin:
-                      EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
-                  decoration: BoxDecoration(
-                      color: Colors.white70,
-                      borderRadius: BorderRadius.circular(50)),
-                  alignment: Alignment.center,
-                  child: !validateUrl(url)
-                      ?  Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
+                SizedBox(
+                  height: height * 0.1, // <-- SEE HERE
+                ),
+                FittedBox(
+                  fit: BoxFit.cover,
+                  child: Container(
+                    width: width * 0.75,
+                    height: height * 0.5,
+                    decoration: BoxDecoration(
+                        color: Colors.white70,
+                        borderRadius: BorderRadius.circular(50)),
+                    alignment: Alignment.center,
+                    child: !validateUrl(url)
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                                FittedBox(
+                                  child: Text("   Your last scan data    ",
+                                      style: TextStyle(fontSize: 30),
+                                      textAlign: TextAlign.center),
+                                  fit: BoxFit.cover,
+                                ),
+                                Image.asset(
+                                  "assets/not-found.png",
+                                  height: height * 0.2,
+                                  width: width * 0.2,
+                                ),
+                                FittedBox(
+                                  child: Text("   Data not found, use QR scanner    ",
+                                      style: TextStyle(fontSize: 30),
+                                      textAlign: TextAlign.center),
+                                  fit: BoxFit.cover,
+                                ),
+                              ])
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
                               Text("Your last scan data",
                                   style: TextStyle(fontSize: 24)),
-                              Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.3,
-                                  child: Image(
-                                      image:
-                                          AssetImage("assets/not-found.png"))),
-                              Text("Data not found, use QR scanner",
-                                  style: TextStyle(fontSize: 22),
-                                  textAlign: TextAlign.center)
-                            ])
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Text("Your last scan data",
-                                style: TextStyle(fontSize: 24)),
-                            ScanData(
-                              url: url,
-                            ),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.07,
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ThreeRender(url: url)));
-                                    });
-                                  },
-                                  child: Text("Display this spool"),
-                                  style: ElevatedButton.styleFrom(
-                                      textStyle: TextStyle(fontSize: 20)),
-                                )),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.07,
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  Document(url: url)));
-                                    });
-                                  },
-                                  child: Text("Document information"),
-                                  style: ElevatedButton.styleFrom(
-                                      textStyle: TextStyle(fontSize: 20)),
-                                ))
-                          ],
-                        ),
+                              ScanData(
+                                url: url,
+                              ),
+                              SizedBox(
+                                  height: height * 0.07,
+                                  width: width * 0.7,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ThreeRender(url: url)));
+                                      });
+                                    },
+                                    child: Text("Display this spool"),
+                                    style: ElevatedButton.styleFrom(
+                                        textStyle: TextStyle(fontSize: 20)),
+                                  )),
+                              SizedBox(
+                                  height: height * 0.07,
+                                  width: width * 0.7,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    Document(url: url)));
+                                      });
+                                    },
+                                    child: Text("Document information"),
+                                    style: ElevatedButton.styleFrom(
+                                        textStyle: TextStyle(fontSize: 20)),
+                                  )),
+                              SizedBox(
+                                height: height * 0.05, // <-- SEE HERE
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ],
             ),

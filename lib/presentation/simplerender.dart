@@ -47,7 +47,7 @@ class _SimpleRender extends State<SimpleRender> {
   late three.Group group;
 
   three.Box3 boundingBox = three.Box3();
-  three.Box3 centerBox = three.Box3();
+  three.Box3 reBox = three.Box3();
 
   num aspect = 2.0;
   double dpr = 1.0;
@@ -64,6 +64,7 @@ class _SimpleRender extends State<SimpleRender> {
   var localToCameraAxesPlacement;
   var data;
   var currentDocNumber;
+  var currentSpool = "";
 
   @override
   void initState() {
@@ -137,13 +138,26 @@ class _SimpleRender extends State<SimpleRender> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        SizedBox(
-                          width: width,
-                          height: height / 10.0,
-                          child: Column(
-                            children: <Widget>[
-                              Text("Document: $currentDocNumber"),
-                            ],
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white54,
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(50),
+                                bottomRight: Radius.circular(50)),
+                          ),
+                          child: SizedBox(
+                            width: width,
+                            height: height / 11.0,
+                            child: Column(
+                              children: <Widget>[
+                                Text("Document: $currentDocNumber",
+                                    style: TextStyle(fontSize: 22),
+                                    textAlign: TextAlign.center),
+                                Text("Spool: $currentSpool",
+                                    style: TextStyle(fontSize: 22),
+                                    textAlign: TextAlign.center),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -175,7 +189,7 @@ class _SimpleRender extends State<SimpleRender> {
     dir.unproject(camera);
 
     var ray =
-    three.Raycaster(camera.position, dir.sub(camera.position).normalize());
+        three.Raycaster(camera.position, dir.sub(camera.position).normalize());
     var intersects = ray.intersectObjects(scene.children, true);
 
     if (intersects.isNotEmpty) {
@@ -185,6 +199,8 @@ class _SimpleRender extends State<SimpleRender> {
 
         for (var i = 0; i < intersects.length; i++) {
           //intersects[0].object.material.color.set(0xff0000);
+          scaleView(intersects[0].object);
+          currentSpool = (intersects[0].object.parent?.parent?.name).toString();
         }
         print("hit");
       }
@@ -319,25 +335,25 @@ class _SimpleRender extends State<SimpleRender> {
 
     group = three.Group();
 
-    loadObjFromZip();
+    loadObjFromZip(currentSpool);
 
     animate();
   }
 
-  addObjScene() {
-    loadObjFromZip();
+  addObjScene(String name) {
+    loadObjFromZip(name);
   }
 
-  replaceObjScene() {
+  replaceObjScene(String name) {
     boundingBox = three.Box3();
     for (var i = scene.children.length - 1; i >= 0; i--) {
       var obj = scene.children[i];
       if (obj.type == 'Group') scene.remove(obj);
     }
-    loadObjFromZip();
+    loadObjFromZip(name);
   }
 
-  loadObjFromZip() {
+  loadObjFromZip(String name) {
     var loader = three_jsm.OBJLoader(null);
     bool first = true;
 
@@ -345,6 +361,8 @@ class _SimpleRender extends State<SimpleRender> {
       // scene.clear(),
       setState(() {
         group = three.Group();
+        group.name = name;
+        print(group.name);
         var archiveFiles = 0;
         archive.files.forEach((file) {
           var decode = utf8.decode(file.content);
@@ -373,23 +391,31 @@ class _SimpleRender extends State<SimpleRender> {
               .then((model) => {
             group.add(model),
             if (++archiveFiles == archive.files.length)
-              {scene.add(group), setView(group)}
+              {scene.add(group), addToView(group)}
           });
         });
       })
     });
   }
 
-  setView(three.Object3D object) {
+  addToView(three.Object3D object) {
     object.rotation.x = -Math.PI / 2;
     boundingBox.expandByObject(object);
+    setView(boundingBox);
+  }
 
+  scaleView(three.Object3D object) {
+    reBox = three.Box3().setFromObject(object);
+    setView(reBox);
+  }
+
+  setView(three.Box3 box) {
     //boundingBox = three.Box3().setFromObject(object);
 
     var center = three.Vector3();
     var size = three.Vector3();
-    boundingBox.getCenter(center);
-    boundingBox.getSize(size);
+    box.getCenter(center);
+    box.getSize(size);
 
     var fitOffset = 1.2;
     var maxSize = Math.max(size.x, Math.max(size.y, size.z));
@@ -404,7 +430,6 @@ class _SimpleRender extends State<SimpleRender> {
         .normalize()
         .multiplyScalar(distance);
 
-    controls.maxDistance = distance * 10;
     controls.target.copy(center);
 
     camera.near = distance / 100;

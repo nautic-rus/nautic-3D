@@ -69,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
               child: const Text('Ok'),
               onPressed: () {
                 Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => NoConnectionNavigation()));
+                    context, MaterialPageRoute(builder: (context) => Navigation()));
               },
             ),
           ],

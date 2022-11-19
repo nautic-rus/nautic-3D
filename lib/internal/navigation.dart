@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nautic_viewer/presentation/qr_reader.dart';
 import 'package:nautic_viewer/presentation/select_spool.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 import '../presentation/home.dart';
+import '../presentation/qr_reader.dart';
 import '../presentation/settings.dart';
 
 class Navigation extends StatefulWidget {
@@ -21,6 +21,11 @@ class _NavigationState extends State<Navigation> {
   List indexes = [];
   late TabController _tabController;
 
+  late double width;
+  late double height;
+  late double unitHeightValue;
+  late double multiplier;
+
   final _kTabPages = <Widget>[
     Home(),
     QrReader(),
@@ -30,27 +35,53 @@ class _NavigationState extends State<Navigation> {
     Settings()
   ];
 
-  final _kBottomNavBarItems = <SalomonBottomBarItem>[
-    SalomonBottomBarItem(
-        icon: Icon(Icons.home),
-        title: Text("Home"),
-        selectedColor: Color.fromARGB(255, 119, 134, 233)),
-    SalomonBottomBarItem(
-        icon: Icon(Icons.qr_code_scanner),
-        title: Text("QR scanner"),
-        selectedColor: Color.fromARGB(255, 119, 134, 233)),
-    SalomonBottomBarItem(
-        icon: Icon(Icons.directions_boat),
-        title: Text("Documents"),
-        selectedColor: Color.fromARGB(255, 119, 134, 233)),
-    SalomonBottomBarItem(
-        icon: Icon(Icons.settings),
-        title: Text("Settings"),
-        selectedColor: Color.fromARGB(255, 119, 134, 233)),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
+
+    if (width > height) {
+      width = height;
+      height = MediaQuery.of(context).size.width;
+    }
+
+    unitHeightValue = height * 0.01;
+    multiplier = 1;
+
+    final _kBottomNavBarItems = <SalomonBottomBarItem>[
+      SalomonBottomBarItem(
+        icon: Icon(
+          Icons.home,
+          size: width * 0.07,
+        ),
+        title: Text(
+          "Home",
+        ),
+        selectedColor: Color.fromARGB(255, 119, 134, 233),
+      ),
+      SalomonBottomBarItem(
+          icon: Icon(
+            Icons.qr_code_scanner,
+            size: width * 0.07,
+          ),
+          title: Text("QR scanner"),
+          selectedColor: Color.fromARGB(255, 119, 134, 233)),
+      SalomonBottomBarItem(
+          icon: Icon(
+            Icons.directions_boat,
+            size: width * 0.07,
+          ),
+          title: Text("Documents"),
+          selectedColor: Color.fromARGB(255, 119, 134, 233)),
+      SalomonBottomBarItem(
+          icon: Icon(
+            Icons.settings,
+            size: width * 0.07,
+          ),
+          title: Text("Settings"),
+          selectedColor: Color.fromARGB(255, 119, 134, 233)),
+    ];
+
     final bottomNavBar = SalomonBottomBar(
       currentIndex: _currentIndex,
       onTap: (index) => setState(() {
@@ -64,7 +95,11 @@ class _NavigationState extends State<Navigation> {
         child: Scaffold(
           key: _scaffoldKey,
           body: _kTabPages[_currentIndex],
-          bottomNavigationBar: bottomNavBar,
+          bottomNavigationBar: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.08,
+            width: MediaQuery.of(context).size.width,
+            child: bottomNavBar,
+          ),
         ),
         onWillPop: () async {
           setState(() {
