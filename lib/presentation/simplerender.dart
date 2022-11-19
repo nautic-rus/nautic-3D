@@ -34,6 +34,7 @@ class _SimpleRender extends State<SimpleRender> {
   late three.WebGLRenderTarget renderTarget;
   late three_jsm.OrbitControls controls;
   late three.AxesHelper axes;
+  three.Object3D INTERSECTED = three.Object3D();
 
   late double width;
   late double height;
@@ -178,9 +179,14 @@ class _SimpleRender extends State<SimpleRender> {
     var intersects = ray.intersectObjects(scene.children, true);
 
     if (intersects.isNotEmpty) {
-      print("hit");
-      for (var i = 0; i < intersects.length; i++) {
-        intersects[0].object.material.color.set(0xff0000);
+      if (INTERSECTED != intersects[0].object) {
+        print("defferent");
+        INTERSECTED = intersects[0].object;
+
+        for (var i = 0; i < intersects.length; i++) {
+          //intersects[0].object.material.color.set(0xff0000);
+        }
+        print("hit");
       }
     }
     state = true;
