@@ -14,7 +14,7 @@ Future<Archive> fetchFiles(String url) async {
 }
 
 getData(String url) {
-  List data = ['', '', '0'];
+  List data = ['', '', ''];
   RegExp exp = RegExp('(?<=\=)[^&]+');
   Iterable<RegExpMatch> matches = exp.allMatches(url);
   int i = 0;
@@ -39,4 +39,9 @@ getUrl(List data) {
   var url =
       'https://deep-sea.ru/rest-spec/spoolFiles?docNumber=${data[0]}&spool=${data[1]}&isom=${data[2]}';
   return url;
+}
+
+getDocument(String url) {
+  var data = getData(url);
+  return data[0];
 }

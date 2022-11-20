@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:nautic_viewer/presentation/select_spool.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
+import '../presentation/history.dart';
 import '../presentation/home.dart';
 import '../presentation/qr_reader.dart';
 import '../presentation/settings.dart';
@@ -29,7 +30,7 @@ class _NavigationState extends State<Navigation> {
   final _kTabPages = <Widget>[
     Home(),
     QrReader(),
-    SelectSpool(
+    History(
       docNumber: "210101-819-0001",
     ),
     Settings()
@@ -51,7 +52,7 @@ class _NavigationState extends State<Navigation> {
     final _kBottomNavBarItems = <SalomonBottomBarItem>[
       SalomonBottomBarItem(
         icon: Icon(
-          Icons.home,
+          Icons.home_outlined,
           size: width * 0.07,
         ),
         title: Text(
@@ -61,24 +62,24 @@ class _NavigationState extends State<Navigation> {
       ),
       SalomonBottomBarItem(
           icon: Icon(
-            Icons.qr_code_scanner,
+            Icons.qr_code_scanner_outlined,
             size: width * 0.07,
           ),
           title: Text("QR scanner"),
           selectedColor: Color.fromARGB(255, 119, 134, 233)),
       SalomonBottomBarItem(
           icon: Icon(
-            Icons.directions_boat,
+            Icons.history_outlined,
             size: width * 0.07,
           ),
-          title: Text("Documents"),
+          title: Text("History"),
           selectedColor: Color.fromARGB(255, 119, 134, 233)),
       SalomonBottomBarItem(
           icon: Icon(
-            Icons.settings,
+            Icons.info_outline,
             size: width * 0.07,
           ),
-          title: Text("Settings"),
+          title: Text("Information"),
           selectedColor: Color.fromARGB(255, 119, 134, 233)),
     ];
 

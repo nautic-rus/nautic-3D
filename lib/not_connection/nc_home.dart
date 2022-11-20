@@ -15,6 +15,10 @@ class NoConnectionHome extends StatefulWidget {
 class _NoConnectionHomeState extends State<NoConnectionHome> {
   String url = "";
   late Future<dynamic> urlFuture = getLastScanUrl();
+  late double width;
+  late double height;
+  late double unitHeightValue;
+  late double multiplier;
 
   @override
   void initState() {
@@ -27,6 +31,9 @@ class _NoConnectionHomeState extends State<NoConnectionHome> {
 
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: Container(
           alignment: Alignment.center,
@@ -49,7 +56,20 @@ class _NoConnectionHomeState extends State<NoConnectionHome> {
                         SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")),
                 Container(
                   width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.height * 0.5,
+                  height: MediaQuery.of(context).size.height * 0.15,
+                  alignment: Alignment.center,
+                  child: Text(
+                    "No internet connection, application features are limited",
+                    style: TextStyle(fontSize: 22),
+                    textAlign: TextAlign.center,
+                  ),
+                  decoration: BoxDecoration(
+                      color: Colors.red.shade300,
+                      borderRadius: BorderRadius.circular(50)),
+                ),
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.3,
                   margin:
                       EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
                   decoration: BoxDecoration(
@@ -60,17 +80,24 @@ class _NoConnectionHomeState extends State<NoConnectionHome> {
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                              Text("Your last scan data",
-                                  style: TextStyle(fontSize: 24)),
-                              Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.3,
-                                  child: Image(
-                                      image:
-                                          AssetImage("assets/not-found.png"))),
-                              Text("Data not found, use QR scanner",
-                                  style: TextStyle(fontSize: 22),
-                                  textAlign: TextAlign.center)
+                              FittedBox(
+                                child: Text("   Your last scan data    ",
+                                    style: TextStyle(fontSize: 30),
+                                    textAlign: TextAlign.center),
+                                fit: BoxFit.cover,
+                              ),
+                              Image.asset(
+                                "assets/not-found.png",
+                                height: height * 0.2,
+                                width: width * 0.2,
+                              ),
+                              FittedBox(
+                                child: Text(
+                                    "   Data not found, use QR scanner    ",
+                                    style: TextStyle(fontSize: 30),
+                                    textAlign: TextAlign.center),
+                                fit: BoxFit.cover,
+                              ),
                             ])
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -82,6 +109,9 @@ class _NoConnectionHomeState extends State<NoConnectionHome> {
                             ),
                           ],
                         ),
+                ),
+                SizedBox(
+                  height: height * 0.05, // <-- SEE HERE
                 ),
               ],
             ),

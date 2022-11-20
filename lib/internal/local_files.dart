@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -37,4 +38,36 @@ saveLastScanUrl(String url) {
   String kLocalFileName = 'file_last_qr_url_localfile.txt';
 
   _writeTextToLocalFile(url, kLocalFileName);
+}
+
+getDocumentsHistory() async {
+  String kLocalFileName = 'file_last_documents_localfile.txt';
+
+  List documents = [];
+
+  await _loadTextFromLocalFile(kLocalFileName).then((value) =>
+  {
+    documents = json.decode(value).cast<String>().toList()
+  });
+
+  print(documents);
+
+  return documents;
+}
+
+saveLastDocuments(String documents) async {
+  List<String> docs = [];
+  String kLocalFileName = 'file_last_documents_localfile.txt';
+  print(docs);
+  _writeTextToLocalFile(docs.toString(), kLocalFileName);
+
+  await getDocumentsHistory().then((value) =>
+  {
+    docs = json.decode(value).cast<String>().toList()
+  });
+
+  docs.add(documents);
+
+  print(docs);
+  _writeTextToLocalFile(docs.toString(), kLocalFileName);
 }

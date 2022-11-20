@@ -94,7 +94,7 @@ class _DocumentState extends State<Document> {
                         setState(() {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) =>
-                                  SimpleRender(url: getUrl(["${data[0]}", "full", "${data[2]}"]))));
+                                  SimpleRender(url: getUrl(["${data[0]}", "full", "${data[2]}"]), urlSpool: widget.url,)));
                         });
                       },
                       child: Text("Display all spools"),

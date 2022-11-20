@@ -45,6 +45,8 @@ class _ThreeRender extends State<ThreeRender> {
 
   late three.Group group;
 
+
+
   three.Box3 boundingBox = three.Box3();
   three.Box3 reBox = three.Box3();
 
@@ -106,17 +108,17 @@ class _ThreeRender extends State<ThreeRender> {
             title: Text("3D viewer"),
           ),
         ),
-        body: GestureDetector(
-          onDoubleTap: () {},
-          onDoubleTapDown: (details) => onPointer(details),
-          child: Builder(
-            builder: (BuildContext context) {
-              initSize(context);
-              return Container(
+        body: Builder(
+          builder: (BuildContext context) {
+            initSize(context);
+            return GestureDetector(
+              onDoubleTap: () {},
+              onDoubleTapDown: (details) => onPointer(details),
+              child: Container(
                 child: _build(context),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ));
   }
 

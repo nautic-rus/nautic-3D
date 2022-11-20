@@ -15,9 +15,11 @@ import 'package:three_dart_jsm/three_dart_jsm.dart' as three_jsm;
 import '../data/api/zipobject_services.dart';
 
 class SimpleRender extends StatefulWidget {
-  SimpleRender({Key? key, required this.url}) : super(key: key);
+  SimpleRender({Key? key, required this.url, required this.urlSpool})
+      : super(key: key);
 
   String url;
+  String urlSpool;
 
   @override
   State<SimpleRender> createState() => _SimpleRender();
@@ -69,7 +71,8 @@ class _SimpleRender extends State<SimpleRender> {
   @override
   void initState() {
     super.initState();
-    data = getData(widget.url);
+    data = getData(widget.urlSpool);
+    currentSpool = data[1];
     currentDocNumber = data[0];
 
     parseSpool(currentDocNumber).then((value) => {
@@ -135,32 +138,58 @@ class _SimpleRender extends State<SimpleRender> {
                 }),
             Positioned(
               child: state
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white54,
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(50),
-                                bottomRight: Radius.circular(50)),
-                          ),
-                          child: SizedBox(
-                            width: width,
-                            height: height / 11.0,
-                            child: Column(
-                              children: <Widget>[
-                                Text("Document: $currentDocNumber",
-                                    style: TextStyle(fontSize: 22),
-                                    textAlign: TextAlign.center),
-                                Text("Spool: $currentSpool",
-                                    style: TextStyle(fontSize: 22),
-                                    textAlign: TextAlign.center),
-                              ],
+                  ? Container(
+                      width: width,
+                      height: height,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white54,
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(50),
+                                  bottomRight: Radius.circular(50)),
+                            ),
+                            child: SizedBox(
+                              width: width,
+                              height: height / 10.0,
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Document: $currentDocNumber",
+                                      style: TextStyle(fontSize: 20),
+                                      textAlign: TextAlign.center),
+                                  Text("Spool: $currentSpool",
+                                      style: TextStyle(fontSize: 20),
+                                      textAlign: TextAlign.center),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 20),
+                                height: width * 0.15,
+                                width: width * 0.15,
+                                child: IconButton(
+                                  onPressed: () => {setView(boundingBox)},
+                                  icon: Icon(Icons.center_focus_strong),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.white54,
+                                    primary: Colors.black,
+                                    onSurface: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: height * 0.025,
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
                     )
                   : Container(
                       width: width,
@@ -192,15 +221,25 @@ class _SimpleRender extends State<SimpleRender> {
         three.Raycaster(camera.position, dir.sub(camera.position).normalize());
     var intersects = ray.intersectObjects(scene.children, true);
 
-    if (intersects.isNotEmpty) {
+    if (intersects.isNotEmpty && intersects[0].object.name != "axes") {
       if (INTERSECTED != intersects[0].object) {
+        scene.children.forEach((gr) => {
+              if (gr.type == 'Group')
+                {
+                  gr.children.forEach((ch) => {
+                        ch.children.forEach((mesh) {
+                          mesh.material.color.set(0xffffff);
+                        })
+                      })
+                }
+            });
         print("defferent");
         INTERSECTED = intersects[0].object;
 
         for (var i = 0; i < intersects.length; i++) {
-          //intersects[0].object.material.color.set(0xff0000);
+          intersects[0].object.material.color.set(0x9D7E7E);
           scaleView(intersects[0].object);
-          currentSpool = (intersects[0].object.parent?.parent?.name).toString();
+          // currentSpool = intersects[0].object.parent?.parent?.name;
         }
         print("hit");
       }
@@ -304,7 +343,7 @@ class _SimpleRender extends State<SimpleRender> {
 
     scene = three.Scene();
 
-    camera = three.PerspectiveCamera(50, aspect, 1, 10000);
+    camera = three.PerspectiveCamera(50, aspect, 1, 100000);
     camera.position.set(-1, 1, 1);
     scene.add(camera);
     scene.background = three.Color(0xA6A6A6);
@@ -324,9 +363,10 @@ class _SimpleRender extends State<SimpleRender> {
     controls.enableZoom = true;
 
     controls.minDistance = 10;
-    controls.maxDistance = 30000;
+    controls.maxDistance = 3000000;
 
     axes = three.AxesHelper(100000);
+    axes.name = "axes";
     localToCameraAxesPlacement = controls.target;
     axes.rotation.x = -Math.PI / 2;
     scene.add(axes);
@@ -335,13 +375,17 @@ class _SimpleRender extends State<SimpleRender> {
 
     group = three.Group();
 
-    loadObjFromZip(currentSpool);
+    loadObjFromZip("full");
 
     animate();
   }
 
-  addObjScene(String name) {
-    loadObjFromZip(name);
+  loadAllSpools() {
+    spoolsList.forEach((spool) {
+      widget.url = getUrl([currentDocNumber, spool, data[2]]);
+      print(spool);
+      loadObjFromZip(spool);
+    });
   }
 
   replaceObjScene(String name) {
@@ -353,49 +397,91 @@ class _SimpleRender extends State<SimpleRender> {
     loadObjFromZip(name);
   }
 
-  loadObjFromZip(String name) {
+  loadObjFromZip(String name) async {
     var loader = three_jsm.OBJLoader(null);
-    bool first = true;
 
-    fetchFiles(widget.url).then((archive) => {
-      // scene.clear(),
-      setState(() {
-        group = three.Group();
-        group.name = name;
-        print(group.name);
-        var archiveFiles = 0;
-        archive.files.forEach((file) {
-          var decode = utf8.decode(file.content);
-          List<String> split;
-          List<String> formatted = List.empty(growable: true);
-          decode.split('\n').forEach((line) => {
-            split = line.split(' '),
-            if (split.isNotEmpty && split.elementAt(0) == 'v')
-              {formatted.add(line)}
-            else if (split.isNotEmpty && split.elementAt(0) == 'f')
-              {
-                formatted.add(List.from([
-                  'f',
-                  split.elementAt(1).replaceAll("/", "//"),
-                  split.elementAt(2).replaceAll("/", "//"),
-                  split.elementAt(3).replaceAll("/", "//")
-                ]).join(' ')),
-              }
-            else if (line.trim() == "")
-                {}
-              else
-                {formatted.add(line)}
-          });
+    await fetchFiles(widget.url).then((archive) => {
+          // scene.clear(),
+          setState(() {
+            group = three.Group();
+            group.name = name;
+            print(group.name);
+            var archiveFiles = 0;
+            archive.files.forEach((file) {
+              var decode = utf8.decode(file.content);
+              List<String> split;
+              List<String> formatted = List.empty(growable: true);
+              decode.split('\n').forEach((line) => {
+                    split = line.split(' '),
+                    if (split.isNotEmpty && split.elementAt(0) == 'v')
+                      {formatted.add(line)}
+                    else if (split.isNotEmpty && split.elementAt(0) == 'f')
+                      {
+                        formatted.add(List.from([
+                          'f',
+                          split.elementAt(1).replaceAll("/", "//"),
+                          split.elementAt(2).replaceAll("/", "//"),
+                          split.elementAt(3).replaceAll("/", "//")
+                        ]).join(' ')),
+                      }
+                    else if (line.trim() == "")
+                      {}
+                    else
+                      {formatted.add(line)}
+                  });
 
-          (loader.parse(formatted.join('\n')) as Future<dynamic>)
-              .then((model) => {
-            group.add(model),
-            if (++archiveFiles == archive.files.length)
-              {scene.add(group), addToView(group)}
-          });
+              (loader.parse(formatted.join('\n')) as Future<dynamic>)
+                  .then((model) => {
+                        group.add(model),
+                        if (++archiveFiles == archive.files.length)
+                          {
+                            scene.add(group),
+                            group.rotation.x = -Math.PI / 2
+                          }
+                      });
+            });
+          })
         });
-      })
-    });
+
+    fetchFiles(widget.urlSpool).then((archive) => {
+          // scene.clear(),
+          setState(() {
+            group = three.Group();
+            group.name = currentSpool;
+            print(group.name);
+            var archiveFiles = 0;
+            archive.files.forEach((file) {
+              var decode = utf8.decode(file.content);
+              List<String> split;
+              List<String> formatted = List.empty(growable: true);
+              decode.split('\n').forEach((line) => {
+                    split = line.split(' '),
+                    if (split.isNotEmpty && split.elementAt(0) == 'v')
+                      {formatted.add(line)}
+                    else if (split.isNotEmpty && split.elementAt(0) == 'f')
+                      {
+                        formatted.add(List.from([
+                          'f',
+                          split.elementAt(1).replaceAll("/", "//"),
+                          split.elementAt(2).replaceAll("/", "//"),
+                          split.elementAt(3).replaceAll("/", "//")
+                        ]).join(' ')),
+                      }
+                    else if (line.trim() == "")
+                      {}
+                    else
+                      {formatted.add(line)}
+                  });
+
+              (loader.parse(formatted.join('\n')) as Future<dynamic>)
+                  .then((model) => {
+                        group.add(model),
+                        if (++archiveFiles == archive.files.length)
+                          {scene.add(group), createScaleView(group)}
+                      });
+            });
+          })
+        });
   }
 
   addToView(three.Object3D object) {
@@ -409,8 +495,26 @@ class _SimpleRender extends State<SimpleRender> {
     setView(reBox);
   }
 
+  createScaleView(three.Object3D object) {
+    object.rotation.x = -Math.PI / 2;
+    boundingBox.expandByObject(object);
+    reBox = three.Box3().setFromObject(object);
+    setView(reBox);
+  }
+
   setView(three.Box3 box) {
     //boundingBox = three.Box3().setFromObject(object);
+
+    scene.children.forEach((gr) => {
+          if (gr.name == currentSpool)
+            {
+              gr.children.forEach((ch) => {
+                    ch.children.forEach((mesh) {
+                      mesh.material.color.set(0xFF0000);
+                    })
+                  })
+            }
+        });
 
     var center = three.Vector3();
     var size = three.Vector3();

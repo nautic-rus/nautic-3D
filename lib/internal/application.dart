@@ -18,6 +18,7 @@ class Application extends StatelessWidget {
           primaryColorDark: Colors.white,
           useMaterial3: true),
       home: SplashScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
