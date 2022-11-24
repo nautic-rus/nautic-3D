@@ -45,10 +45,8 @@ getDocumentsHistory() async {
 
   List documents = [];
 
-  await _loadTextFromLocalFile(kLocalFileName).then((value) =>
-  {
-    documents = json.decode(value).cast<String>().toList()
-  });
+  await _loadTextFromLocalFile(kLocalFileName).then(
+      (value) => {documents = json.decode(value).cast<String>().toList()});
 
   print(documents);
 
@@ -61,10 +59,8 @@ saveLastDocuments(String documents) async {
   print(docs);
   _writeTextToLocalFile(docs.toString(), kLocalFileName);
 
-  await getDocumentsHistory().then((value) =>
-  {
-    docs = json.decode(value).cast<String>().toList()
-  });
+  await getDocumentsHistory()
+      .then((value) => {docs = json.decode(value).cast<String>().toList()});
 
   docs.add(documents);
 

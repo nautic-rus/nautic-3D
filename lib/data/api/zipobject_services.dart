@@ -15,7 +15,7 @@ Future<Archive> fetchFiles(String url) async {
 
 getData(String url) {
   List data = ['', '', ''];
-  RegExp exp = RegExp('(?<=\=)[^&]+');
+  RegExp exp = RegExp('(?<=\\=)[^&]+');
   Iterable<RegExpMatch> matches = exp.allMatches(url);
   int i = 0;
   for (final m in matches) {
@@ -44,4 +44,16 @@ getUrl(List data) {
 getDocument(String url) {
   var data = getData(url);
   return data[0];
+}
+
+getSqInSystem(String filename) {
+  String? name;
+  RegExp exp = RegExp('\\d+(?=\\.obj\$)');
+  Iterable<RegExpMatch> matches = exp.allMatches(filename);
+  for (final m in matches) {
+    name = m[0].toString();
+  }
+
+  print("$filename parse to $name");
+  return name;
 }

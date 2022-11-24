@@ -20,6 +20,7 @@ class _History extends State<History> {
   int _index = 0;
 
   List<String> spoolsList = List<String>.empty(growable: true);
+  List<String> documentsList = List<String>.empty(growable: true);
 
   var data;
   var currentDocNumber;

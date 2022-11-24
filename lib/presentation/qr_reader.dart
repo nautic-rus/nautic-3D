@@ -138,6 +138,7 @@ class _QrReaderState extends State<QrReader> {
         setState(() async {
           this.barcode = barcode;
           if (validateUrl(barcode.code.toString())) {
+            print("barcode ${barcode.code.toString()}");
             saveLastScanUrl(barcode.code.toString());
             Navigator.of(context)
                 .push(MaterialPageRoute(

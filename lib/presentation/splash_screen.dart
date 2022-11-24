@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../internal/navigation.dart';
 import '../not_connection/nc_navigation.dart';
+import 'package:http/http.dart' as http;
 import 'home.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -42,6 +43,16 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
+  Future<bool> isDeepseaConnected() async {
+    var url = 'https://deep-sea.ru/rest/ping';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   _navigateToHome() async {
     await Future.delayed(Duration(milliseconds: 1500), () {});
 
@@ -49,7 +60,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => Navigation()));
     } else {
-      await _dialogBuilder(context);
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Navigation()));
     }
   }
 
@@ -60,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
         return AlertDialog(
           title: const Text('Message'),
           content: const Text(
-              'Internet connection is not available, application functions are limited'),
+              'No connection to server, application functions are limited'),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(

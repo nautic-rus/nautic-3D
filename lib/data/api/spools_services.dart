@@ -17,12 +17,14 @@ Future<List<SpoolData>> fetchSpool(String docNumber) async {
 
 class SpoolData {
   final String spool;
+  final int sqInSystem;
 
-  const SpoolData({required this.spool});
+  const SpoolData({required this.spool, required this.sqInSystem});
 
   factory SpoolData.fromJson(Map<String, dynamic> json) {
     return SpoolData(
       spool: json['spool'],
+      sqInSystem: json['sqInSystem'],
     );
   }
 }

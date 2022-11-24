@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nautic_viewer/presentation/settings.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 import 'nc_home.dart';
@@ -22,6 +23,7 @@ class _NoConnectionNavigationState extends State<NoConnectionNavigation> {
   final _kTabPages = <Widget>[
     NoConnectionHome(),
     NoConnectionQrReader(),
+    Settings()
   ];
 
   final _kBottomNavBarItems = <SalomonBottomBarItem>[
@@ -32,7 +34,13 @@ class _NoConnectionNavigationState extends State<NoConnectionNavigation> {
     SalomonBottomBarItem(
         icon: Icon(Icons.qr_code_scanner),
         title: Text("QR scanner"),
-        selectedColor: Color.fromARGB(255, 119, 134, 233))
+        selectedColor: Color.fromARGB(255, 119, 134, 233)),
+    SalomonBottomBarItem(
+        icon: Icon(
+          Icons.info_outline,
+        ),
+        title: Text("Information"),
+        selectedColor: Color.fromARGB(255, 119, 134, 233)),
   ];
 
   @override

@@ -12,6 +12,7 @@ import 'package:three_dart/three3d/math/math.dart';
 import 'package:three_dart/three_dart.dart' as three;
 import 'package:three_dart_jsm/three_dart_jsm.dart' as three_jsm;
 
+import '../data/api/spools_services.dart';
 import '../data/api/zipobject_services.dart';
 
 class SimpleRender extends StatefulWidget {
@@ -26,7 +27,10 @@ class SimpleRender extends StatefulWidget {
 }
 
 class _SimpleRender extends State<SimpleRender> {
+  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
+  List<String> fullSpoolsList = List<String>.empty(growable: true);
+  List<int> sqList = List<int>.empty(growable: true);
 
   final GlobalKey<three_jsm.DomLikeListenableState> _globalKey =
       GlobalKey<three_jsm.DomLikeListenableState>();
@@ -50,6 +54,9 @@ class _SimpleRender extends State<SimpleRender> {
 
   three.Box3 boundingBox = three.Box3();
   three.Box3 reBox = three.Box3();
+
+  three.Raycaster raycaster = three.Raycaster();
+  three.Vector2 pointer = three.Vector2();
 
   num aspect = 2.0;
   double dpr = 1.0;
@@ -82,6 +89,17 @@ class _SimpleRender extends State<SimpleRender> {
             });
           })
         });
+
+    fetchSpool(currentDocNumber).then((value) => {
+          value.forEach((element) {
+            futureSpool.add(element);
+          }),
+        });
+
+    for (int i = 0; i < futureSpool.length; i++) {
+      spoolsList.add(futureSpool[i].spool);
+      sqList.add(futureSpool[i].sqInSystem);
+    }
 
     // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
@@ -210,18 +228,20 @@ class _SimpleRender extends State<SimpleRender> {
     setState(() {
       state = false;
     });
-    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1.05;
-    var y = -(details.globalPosition.dy / screenSize!.height) * 2 + 1.1;
-    var dir = three.Vector3(x, y);
-    print(x);
-    print(y);
-    dir.unproject(camera);
+    pointer.x = (details.globalPosition.dx / screenSize!.width) * 2 - 1;
+    pointer.y = -(details.globalPosition.dy /
+                (screenSize!.height +
+                    appBarHeight +
+                    MediaQuery.of(context).padding.top)) *
+            2 +
+        1;
+    print(pointer.x);
+    print(pointer.y);
 
-    var ray =
-        three.Raycaster(camera.position, dir.sub(camera.position).normalize());
-    var intersects = ray.intersectObjects(scene.children, true);
+    raycaster.setFromCamera(pointer, camera);
+    var intersects = raycaster.intersectObjects(scene.children, true);
 
-    if (intersects.isNotEmpty && intersects[0].object.name != "axes") {
+    if (intersects.isNotEmpty) {
       if (INTERSECTED != intersects[0].object) {
         scene.children.forEach((gr) => {
               if (gr.type == 'Group')
@@ -233,13 +253,23 @@ class _SimpleRender extends State<SimpleRender> {
                       })
                 }
             });
-        print("defferent");
+
         INTERSECTED = intersects[0].object;
 
         for (var i = 0; i < intersects.length; i++) {
-          intersects[0].object.material.color.set(0x9D7E7E);
-          scaleView(intersects[0].object);
+          // intersects[0].object.parent?.material.color.set(0x9D7E7E);
+          intersects[0].object.parent?.parent?.children.forEach((ch) {
+            ch.children.forEach((mesh) {
+              mesh.material.color.set(0x9D7E7E);
+            });
+          });
+          scaleView(intersects[0].object.parent!.parent!);
           // currentSpool = intersects[0].object.parent?.parent?.name;
+          // sqInSystemToSpool(currentDocNumber, intersects[0].object.parent!.name).then((value) {
+          //   currentSpool = value;
+          // });
+
+          currentSpool = intersects[0].object.name;
         }
         print("hit");
       }
@@ -432,12 +462,14 @@ class _SimpleRender extends State<SimpleRender> {
 
               (loader.parse(formatted.join('\n')) as Future<dynamic>)
                   .then((model) => {
+                        for (int i = 0; i < spoolsList.length; i++)
+                          {
+                            if (file.name == sqList[i].toString())
+                              {model.name = spoolsList[i]}
+                          },
                         group.add(model),
                         if (++archiveFiles == archive.files.length)
-                          {
-                            scene.add(group),
-                            group.rotation.x = -Math.PI / 2
-                          }
+                          {scene.add(group), group.rotation.x = -Math.PI / 2}
                       });
             });
           })

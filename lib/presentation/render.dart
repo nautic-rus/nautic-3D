@@ -27,7 +27,7 @@ class _ThreeRender extends State<ThreeRender> {
   List<String> spoolsList = List<String>.empty(growable: true);
 
   final GlobalKey<three_jsm.DomLikeListenableState> _globalKey =
-      GlobalKey<three_jsm.DomLikeListenableState>();
+  GlobalKey<three_jsm.DomLikeListenableState>();
 
   late FlutterGlPlugin three3dRender;
   three.WebGLRenderer? renderer;
@@ -45,7 +45,8 @@ class _ThreeRender extends State<ThreeRender> {
 
   late three.Group group;
 
-
+  three.Raycaster raycaster = three.Raycaster();
+  three.Vector2 pointer = three.Vector2();
 
   three.Box3 boundingBox = three.Box3();
   three.Box3 reBox = three.Box3();
@@ -82,18 +83,18 @@ class _ThreeRender extends State<ThreeRender> {
     addingSpool = currentSpool;
 
     parseSpool(currentDocNumber).then((value) => {
-          setState(() {
-            value.forEach((element) {
-              spoolsList.add(element);
-            });
-            currentSpoolIndex = spoolsList.indexOf(currentSpool);
-            nextSpoolIndex = currentSpoolIndex;
-            previousSpoolIndex = currentSpoolIndex;
-
-            print(spoolsList);
-            print("Current spool index is $currentSpoolIndex");
-          })
+      setState(() {
+        value.forEach((element) {
+          spoolsList.add(element);
         });
+        currentSpoolIndex = spoolsList.indexOf(currentSpool);
+        nextSpoolIndex = currentSpoolIndex;
+        previousSpoolIndex = currentSpoolIndex;
+
+        print(spoolsList);
+        print("Current spool index is $currentSpoolIndex");
+      })
+    });
 
     // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
@@ -101,7 +102,6 @@ class _ThreeRender extends State<ThreeRender> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(appBarHeight),
           child: AppBar(
@@ -138,7 +138,7 @@ class _ThreeRender extends State<ThreeRender> {
                         if (kIsWeb) {
                           return three3dRender.isInitialized
                               ? HtmlElementView(
-                                  viewType: three3dRender.textureId!.toString())
+                              viewType: three3dRender.textureId!.toString())
                               : Container();
                         } else {
                           return three3dRender.isInitialized
@@ -150,137 +150,137 @@ class _ThreeRender extends State<ThreeRender> {
             Positioned(
               child: state
                   ? Container(
-                      width: width,
-                      height: height,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white54,
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(50),
-                                  bottomRight: Radius.circular(50)),
-                            ),
-                            child: SizedBox(
-                              width: width,
-                              height: height / 10.0,
-                              child: Column(
-                                children: <Widget>[
-                                  Text("Document: $currentDocNumber",
-                                      style: TextStyle(fontSize: 20),
-                                      textAlign: TextAlign.center),
-                                  Text(
-                                      "Spool: $currentSpool | Adding spool: $addingSpool",
-                                      style: TextStyle(fontSize: 20),
-                                      textAlign: TextAlign.center),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  SizedBox(
-                                      height: width * 0.15,
-                                      width: width * 0.2,
-                                      child: IconButton(
-                                        onPressed: () => previousSpool(),
-                                        icon: Icon(Icons.arrow_back_ios),
-                                        style: TextButton.styleFrom(
-                                          backgroundColor: Colors.white54,
-                                          primary: Colors.black,
-                                          onSurface: Colors.white,
-                                        ),
-                                      )),
-                                  Container(
-                                    margin:
-                                        EdgeInsets.symmetric(horizontal: 20),
-                                    height: width * 0.15,
-                                    width: width * 0.15,
-                                    child: IconButton(
-                                      onPressed: () => {setView(boundingBox)},
-                                      icon: Icon(Icons.center_focus_strong),
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: Colors.white54,
-                                        primary: Colors.black,
-                                        onSurface: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  RotatedBox(
-                                    quarterTurns: 2,
-                                    child: SizedBox(
-                                        height: width * 0.15,
-                                        width: width * 0.2,
-                                        child: IconButton(
-                                          onPressed: () => nextSpool(),
-                                          icon: Icon(Icons.arrow_back_ios),
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: Colors.white54,
-                                            primary: Colors.black,
-                                            onSurface: Colors.white,
-                                          ),
-                                        )),
-                                  )
-                                ],
-                              ),
-                              SizedBox(
-                                height: height * 0.01, // <-- SEE HERE
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  SizedBox(
-                                      height: width * 0.15,
-                                      width: width / 2.5,
-                                      child: TextButton(
-                                        onPressed: () => addPreviousSpool(),
-                                        child: Text("+ prev spool",
-                                            style: TextStyle(fontSize: 20)),
-                                        style: TextButton.styleFrom(
-                                          backgroundColor: Colors.white54,
-                                          primary: Colors.black,
-                                          onSurface: Colors.white,
-                                        ),
-                                      )),
-                                  SizedBox(
-                                      height: width * 0.15,
-                                      width: width / 2.5,
-                                      child: TextButton(
-                                        onPressed: () => addNextSpool(),
-                                        child: Text("+ next spool",
-                                            style: TextStyle(fontSize: 20)),
-                                        style: TextButton.styleFrom(
-                                          backgroundColor: Colors.white54,
-                                          primary: Colors.black,
-                                          onSurface: Colors.white,
-                                        ),
-                                      )),
-                                ],
-                              ),
-                              SizedBox(
-                                height: height * 0.01, // <-- SEE HERE
-                              ),
-                            ],
-                          )
-                        ],
+                width: width,
+                height: height,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white54,
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(50),
+                            bottomRight: Radius.circular(50)),
                       ),
-                    )
-                  : Container(
-                      width: width,
-                      height: height,
-                      color: Colors.grey.shade600.withOpacity(0.5),
-                      child: LoadingAnimationWidget.threeArchedCircle(
-                          color: Colors.white,
-                          size: MediaQuery.of(context).size.width * 0.2),
+                      child: SizedBox(
+                        width: width,
+                        height: height / 10.0,
+                        child: Column(
+                          children: <Widget>[
+                            Text("Document: $currentDocNumber",
+                                style: TextStyle(fontSize: 20),
+                                textAlign: TextAlign.center),
+                            Text(
+                                "Spool: $currentSpool | Adding spool: $addingSpool",
+                                style: TextStyle(fontSize: 20),
+                                textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
                     ),
+                    Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceAround,
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            SizedBox(
+                                height: width * 0.15,
+                                width: width * 0.2,
+                                child: IconButton(
+                                  onPressed: () => previousSpool(),
+                                  icon: Icon(Icons.arrow_back_ios),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.white54,
+                                    primary: Colors.black,
+                                    onSurface: Colors.white,
+                                  ),
+                                )),
+                            Container(
+                              margin:
+                              EdgeInsets.symmetric(horizontal: 20),
+                              height: width * 0.15,
+                              width: width * 0.15,
+                              child: IconButton(
+                                onPressed: () => {setView(boundingBox)},
+                                icon: Icon(Icons.center_focus_strong),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.white54,
+                                  primary: Colors.black,
+                                  onSurface: Colors.white,
+                                ),
+                              ),
+                            ),
+                            RotatedBox(
+                              quarterTurns: 2,
+                              child: SizedBox(
+                                  height: width * 0.15,
+                                  width: width * 0.2,
+                                  child: IconButton(
+                                    onPressed: () => nextSpool(),
+                                    icon: Icon(Icons.arrow_back_ios),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.white54,
+                                      primary: Colors.black,
+                                      onSurface: Colors.white,
+                                    ),
+                                  )),
+                            )
+                          ],
+                        ),
+                        SizedBox(
+                          height: height * 0.01, // <-- SEE HERE
+                        ),
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceAround,
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            SizedBox(
+                                height: width * 0.15,
+                                width: width / 2.5,
+                                child: TextButton(
+                                  onPressed: () => addPreviousSpool(),
+                                  child: Text("+ prev spool",
+                                      style: TextStyle(fontSize: 20)),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.white54,
+                                    primary: Colors.black,
+                                    onSurface: Colors.white,
+                                  ),
+                                )),
+                            SizedBox(
+                                height: width * 0.15,
+                                width: width / 2.5,
+                                child: TextButton(
+                                  onPressed: () => addNextSpool(),
+                                  child: Text("+ next spool",
+                                      style: TextStyle(fontSize: 20)),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.white54,
+                                    primary: Colors.black,
+                                    onSurface: Colors.white,
+                                  ),
+                                )),
+                          ],
+                        ),
+                        SizedBox(
+                          height: height * 0.01, // <-- SEE HERE
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              )
+                  : Container(
+                width: width,
+                height: height,
+                color: Colors.grey.shade600.withOpacity(0.5),
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.white,
+                    size: MediaQuery.of(context).size.width * 0.2),
+              ),
             ),
           ],
         ),
@@ -292,36 +292,43 @@ class _ThreeRender extends State<ThreeRender> {
     setState(() {
       state = false;
     });
-    var x = (details.globalPosition.dx / screenSize!.width) * 2 - 1;
-    var y = -(details.globalPosition.dy / screenSize!.height) * 2 + 1;
-    var dir = three.Vector3(x, y);
-    print(x);
-    print(y);
-    dir.unproject(camera);
+    pointer.x = (details.globalPosition.dx / screenSize!.width) * 2 - 1;
+    pointer.y = -(details.globalPosition.dy /
+        (screenSize!.height +
+            appBarHeight +
+            MediaQuery.of(context).padding.top)) *
+        2 +
+        1;
+    print(pointer.x);
+    print(pointer.y);
 
-    var ray =
-        three.Raycaster(camera.position, dir.sub(camera.position).normalize());
-    var intersects = ray.intersectObjects(scene.children, true);
+    raycaster.setFromCamera(pointer, camera);
+    var intersects = raycaster.intersectObjects(scene.children, true);
 
     if (intersects.isNotEmpty) {
-      if (INTERSECTED != intersects[0].object) {
+      if (INTERSECTED != intersects[0].object &&
+          intersects[0].object.name != "axes") {
         scene.children.forEach((gr) => {
-              if (gr.type == 'Group')
-                {
-                  gr.children.forEach((ch) => {
-                        ch.children.forEach((mesh) {
-                          mesh.material.color.set(0xffffff);
-                        })
-                      })
-                }
-            });
-        print("defferent");
+          if (gr.type == 'Group')
+            {
+              gr.children.forEach((ch) => {
+                ch.children.forEach((mesh) {
+                  mesh.material.color.set(0xffffff);
+                })
+              })
+            }
+        });
+
         INTERSECTED = intersects[0].object;
 
         for (var i = 0; i < intersects.length; i++) {
-          intersects[0].object.material.color.set(0x9D7E7E);
-          scaleView(intersects[0].object);
-          currentSpool = intersects[0].object.parent?.parent?.name;
+          intersects[0].object.parent?.parent?.children.forEach((ch) {
+            ch.children.forEach((mesh) {
+              mesh.material.color.set(0x9D7E7E);
+            });
+          });
+          scaleView(intersects[0].object.parent!.parent!);
+          currentSpool = intersects[0].object.parent!.parent!.name;
         }
         print("hit");
       }
@@ -543,6 +550,7 @@ class _ThreeRender extends State<ThreeRender> {
     controls.maxDistance = 30000;
 
     axes = three.AxesHelper(100000);
+    axes.name = "axes";
     localToCameraAxesPlacement = controls.target;
     axes.rotation.x = -Math.PI / 2;
     scene.add(axes);
@@ -574,44 +582,44 @@ class _ThreeRender extends State<ThreeRender> {
     bool first = true;
 
     fetchFiles(widget.url).then((archive) => {
-          // scene.clear(),
-          setState(() {
-            group = three.Group();
-            group.name = name;
-            print(group.name);
-            var archiveFiles = 0;
-            archive.files.forEach((file) {
-              var decode = utf8.decode(file.content);
-              List<String> split;
-              List<String> formatted = List.empty(growable: true);
-              decode.split('\n').forEach((line) => {
-                    split = line.split(' '),
-                    if (split.isNotEmpty && split.elementAt(0) == 'v')
-                      {formatted.add(line)}
-                    else if (split.isNotEmpty && split.elementAt(0) == 'f')
-                      {
-                        formatted.add(List.from([
-                          'f',
-                          split.elementAt(1).replaceAll("/", "//"),
-                          split.elementAt(2).replaceAll("/", "//"),
-                          split.elementAt(3).replaceAll("/", "//")
-                        ]).join(' ')),
-                      }
-                    else if (line.trim() == "")
-                      {}
-                    else
-                      {formatted.add(line)}
-                  });
+      // scene.clear(),
+      setState(() {
+        group = three.Group();
+        group.name = name;
+        print(group.name);
+        var archiveFiles = 0;
+        archive.files.forEach((file) {
+          var decode = utf8.decode(file.content);
+          List<String> split;
+          List<String> formatted = List.empty(growable: true);
+          decode.split('\n').forEach((line) => {
+            split = line.split(' '),
+            if (split.isNotEmpty && split.elementAt(0) == 'v')
+              {formatted.add(line)}
+            else if (split.isNotEmpty && split.elementAt(0) == 'f')
+              {
+                formatted.add(List.from([
+                  'f',
+                  split.elementAt(1).replaceAll("/", "//"),
+                  split.elementAt(2).replaceAll("/", "//"),
+                  split.elementAt(3).replaceAll("/", "//")
+                ]).join(' ')),
+              }
+            else if (line.trim() == "")
+                {}
+              else
+                {formatted.add(line)}
+          });
 
-              (loader.parse(formatted.join('\n')) as Future<dynamic>)
-                  .then((model) => {
-                        group.add(model),
-                        if (++archiveFiles == archive.files.length)
-                          {scene.add(group), addToView(group)}
-                      });
-            });
-          })
+          (loader.parse(formatted.join('\n')) as Future<dynamic>)
+              .then((model) => {
+            group.add(model),
+            if (++archiveFiles == archive.files.length)
+              {scene.add(group), addToView(group)}
+          });
         });
+      })
+    });
   }
 
   addToView(three.Object3D object) {

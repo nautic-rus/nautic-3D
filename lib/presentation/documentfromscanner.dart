@@ -6,6 +6,7 @@ import 'package:nautic_viewer/presentation/simplerender.dart';
 
 import '../data/api/zipobject_services.dart';
 import '../internal/scandata.dart';
+import '../not_connection/if_not_connection.dart';
 
 class Document extends StatefulWidget {
   Document({Key? key, required this.url}) : super(key: key);
@@ -20,6 +21,7 @@ class _DocumentState extends State<Document> {
   var data;
   var currentDocNumber;
   var currentSpool;
+  bool isInternetAvailable = true;
 
   @override
   void initState() {
@@ -43,66 +45,60 @@ class _DocumentState extends State<Document> {
             appBar: AppBar(
               title: Text("Document"),
             ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Information from QR code",
-                          style: TextStyle(fontSize: 20)),
-                      ScanData(url: widget.url)
-                    ],
+            body: NoConnectionPage(
+              page: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Container(child: ScanData(url: widget.url)),
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.07,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    ThreeRender(url: widget.url)));
+                          });
+                        },
+                        child: Text("Display this spool"),
+                        style: ElevatedButton.styleFrom(
+                            textStyle: TextStyle(fontSize: 24)),
+                      )),
+                  Container(
+                    child: Text(
+                      "Spools in this document",
+                      style: TextStyle(fontSize: 24),
+                    ),
                   ),
-                ),
-                SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.07,
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  ThreeRender(url: widget.url)));
-                        });
-                      },
-                      child: Text("Display this spool"),
-                      style: ElevatedButton.styleFrom(
-                          textStyle: TextStyle(fontSize: 20)),
-                    )),
-                Container(
-                  child: Text(
-                    "Spools in this document",
-                    style: TextStyle(fontSize: 20),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: SelectSpool(docNumber: currentDocNumber),
+                    height: MediaQuery.of(context).size.height * 0.4,
+                    width: MediaQuery.of(context).size.width,
+                    alignment: Alignment.center,
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20),
-                  child: SelectSpool(docNumber: currentDocNumber),
-                  height: MediaQuery.of(context).size.height * 0.4,
-                  width: MediaQuery.of(context).size.width,
-                  alignment: Alignment.center,
-                ),
-                SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.07,
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  SimpleRender(url: getUrl(["${data[0]}", "full", "${data[2]}"]), urlSpool: widget.url,)));
-                        });
-                      },
-                      child: Text("Display all spools"),
-                      style: ElevatedButton.styleFrom(
-                          textStyle: TextStyle(fontSize: 20)),
-                    ))
-              ],
-            ),
-          );
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.07,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => SimpleRender(
+                                      url: getUrl(
+                                          ["${data[0]}", "full", "${data[2]}"]),
+                                      urlSpool: widget.url,
+                                    )));
+                          });
+                        },
+                        child: Text("Display all spools"),
+                        style: ElevatedButton.styleFrom(
+                            textStyle: TextStyle(fontSize: 24)),
+                      ))
+                ],
+              ),
+            ));
   }
 }

@@ -16,6 +16,9 @@ class _ScanDataState extends State<ScanData> {
   var currentDocNumber;
   var currentSpool;
 
+  late double width;
+  late double height;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -27,26 +30,31 @@ class _ScanDataState extends State<ScanData> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Text("Document:\n $currentDocNumber",
-                style: TextStyle(fontSize: 16), textAlign: TextAlign.center),
-            Text("Spool:\n $currentSpool",
-                style: TextStyle(fontSize: 16), textAlign: TextAlign.center)
-          ],
-        ),
-        Image.asset(
-          "assets/qr.png",
-          width: MediaQuery.of(context).size.width * 0.2,
-          height: MediaQuery.of(context).size.width * 0.2,
-        )
-      ],
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
+    height = height - height * 0.1;
+
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        children: <Widget>[
+          // Text("Name: $currentDocNumber",
+          //     style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+          Text("SFI-drawing no.: $currentDocNumber",
+              style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+          SizedBox(
+            height: height * 0.02,
+          ),
+          Text("Spool: $currentSpool",
+              style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+          // Text("Date: $currentSpool",
+          //     style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+          // Text("Rev.: $currentSpool",
+          //     style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+          // Text("Sheet.: $currentSpool",
+          //     style: TextStyle(fontSize: 24), textAlign: TextAlign.center)
+        ],
+      ),
     );
   }
 }

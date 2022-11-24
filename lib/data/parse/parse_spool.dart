@@ -1,13 +1,11 @@
-import 'package:three_dart_jsm/three_dart_jsm.dart';
-
 import '../api/spools_services.dart';
 
 parseSpool(String docNumber) async {
   List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
-  List<int> spoolsInt = List<int>.empty(growable: true);
 
   await fetchSpool(docNumber).then((value) => {
+
         value.forEach((element) {
           futureSpool.add(element);
         })
@@ -28,19 +26,90 @@ parseSpool(String docNumber) async {
     dis.add(element);
   });
 
-  print(dis);
   return dis;
+}
+
+parseFullSpool(String docNumber) async {
+  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<String> spoolsList = List<String>.empty(growable: true);
+
+  await fetchSpool(docNumber).then((value) => {
+    value.forEach((element) {
+      futureSpool.add(element);
+    })
+  });
+
+  for (int i = 0; i < futureSpool.length; i++) {
+    spoolsList.add(futureSpool[i].spool);
+  }
+
+  List<String> dis = [];
+  spoolsList.forEach((element) {
+    dis.add(element);
+  });
+
+  return dis;
+}
+
+parseSqInSystem(String docNumber) async {
+  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<String> sqList = List<String>.empty(growable: true);
+
+  await fetchSpool(docNumber).then((value) => {
+    value.forEach((element) {
+      futureSpool.add(element);
+    })
+  });
+
+  for (int i = 0; i < futureSpool.length; i++) {
+    sqList.add(futureSpool[i].sqInSystem.toString());
+  }
+
+  List<String> dis = [];
+  sqList.forEach((element) {
+    dis.add(element);
+  });
+
+  return dis;
+}
+
+sqInSystemToSpool(String docNumber, String sqInSystem) async {
+  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<String> spoolsList = List<String>.empty(growable: true);
+  List<int> sqList = List<int>.empty(growable: true);
+  String spool = "null";
+
+  print(sqInSystem);
+
+  await fetchSpool(docNumber).then((value) => {
+        value.forEach((element) {
+          futureSpool.add(element);
+        }),
+      });
+
+  for (int i = 0; i < futureSpool.length; i++) {
+    spoolsList.add(futureSpool[i].spool);
+    sqList.add(futureSpool[i].sqInSystem);
+  }
+
+  for (int i = 0; i < spoolsList.length; i++) {
+    if (sqInSystem == sqList[i].toString()) {
+      spool = spoolsList[i];
+    }
+  }
+
+  return spool;
 }
 
 zerosInList() {}
 
-int sortSpools(String x1, String x2){
+int sortSpools(String x1, String x2) {
   return addLeftZeros(x1).compareTo(addLeftZeros(x2));
 }
 
-String addLeftZeros(String input, {int length = 10}){
+String addLeftZeros(String input, {int length = 10}) {
   String res = input;
-  while (res.length < length){
+  while (res.length < length) {
     res = "0$res";
   }
   return res;

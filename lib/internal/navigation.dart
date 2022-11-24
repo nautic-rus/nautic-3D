@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nautic_viewer/presentation/select_spool.dart';
-import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
+import 'package:nautic_viewer/presentation/history.dart';
 
-import '../presentation/history.dart';
+import '../not_connection/if_not_connection.dart';
+import '../presentation/chose_document.dart';
 import '../presentation/home.dart';
 import '../presentation/qr_reader.dart';
-import '../presentation/settings.dart';
 
 class Navigation extends StatefulWidget {
   const Navigation({Key? key}) : super(key: key);
@@ -18,7 +17,7 @@ class Navigation extends StatefulWidget {
 class _NavigationState extends State<Navigation> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   var titleAppBar = Text("Nautic 3D");
-  var _currentIndex = 0;
+  var _selectedIndex = 0;
   List indexes = [];
   late TabController _tabController;
 
@@ -28,13 +27,18 @@ class _NavigationState extends State<Navigation> {
   late double multiplier;
 
   final _kTabPages = <Widget>[
-    Home(),
-    QrReader(),
-    History(
-      docNumber: "210101-819-0001",
-    ),
-    Settings()
+    NoConnectionPage(page: Home()),
+    NoConnectionPage(page: QrReader()),
+    NoConnectionPage(page: SelectModel()),
+    // NoConnectionPage(page: History(docNumber: "meow"))
   ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      indexes.add(_selectedIndex);
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,53 +53,34 @@ class _NavigationState extends State<Navigation> {
     unitHeightValue = height * 0.01;
     multiplier = 1;
 
-    final _kBottomNavBarItems = <SalomonBottomBarItem>[
-      SalomonBottomBarItem(
-        icon: Icon(
-          Icons.home_outlined,
-          size: width * 0.07,
-        ),
-        title: Text(
-          "Home",
-        ),
-        selectedColor: Color.fromARGB(255, 119, 134, 233),
-      ),
-      SalomonBottomBarItem(
+    final _kBottomNavBarItems = <BottomNavigationBarItem>[
+      BottomNavigationBarItem(
           icon: Icon(
-            Icons.qr_code_scanner_outlined,
-            size: width * 0.07,
+            Icons.home,
           ),
-          title: Text("QR scanner"),
-          selectedColor: Color.fromARGB(255, 119, 134, 233)),
-      SalomonBottomBarItem(
-          icon: Icon(
-            Icons.history_outlined,
-            size: width * 0.07,
-          ),
-          title: Text("History"),
-          selectedColor: Color.fromARGB(255, 119, 134, 233)),
-      SalomonBottomBarItem(
-          icon: Icon(
-            Icons.info_outline,
-            size: width * 0.07,
-          ),
-          title: Text("Information"),
-          selectedColor: Color.fromARGB(255, 119, 134, 233)),
+          label: "Home"),
+      BottomNavigationBarItem(
+          icon: Icon(Icons.qr_code_scanner), label: "QR scanner"),
+      BottomNavigationBarItem(icon: Icon(Icons.file_copy), label: "Catalog"),
+      // BottomNavigationBarItem(icon: Icon(Icons.history), label: "History")
     ];
 
-    final bottomNavBar = SalomonBottomBar(
-      currentIndex: _currentIndex,
-      onTap: (index) => setState(() {
-        indexes.add(_currentIndex);
-        _currentIndex = index;
-      }),
+    assert(_kTabPages.length == _kBottomNavBarItems.length);
+
+    final bottomNavBar = BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      unselectedItemColor: Colors.black,
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: Color.fromARGB(255, 119, 134, 233),
+      onTap: _onItemTapped,
       items: _kBottomNavBarItems,
+      iconSize: 30,
     );
 
     return WillPopScope(
         child: Scaffold(
           key: _scaffoldKey,
-          body: _kTabPages[_currentIndex],
+          body: _kTabPages[_selectedIndex],
           bottomNavigationBar: SizedBox(
             height: MediaQuery.of(context).size.height * 0.08,
             width: MediaQuery.of(context).size.width,
@@ -106,7 +91,7 @@ class _NavigationState extends State<Navigation> {
           setState(() {
             if (indexes.length > 0) {
               setState(() {
-                _currentIndex = indexes[indexes.length - 1];
+                _selectedIndex = indexes[indexes.length - 1];
                 indexes.removeLast();
               });
             } else {
