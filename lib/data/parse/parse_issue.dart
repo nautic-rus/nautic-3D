@@ -5,7 +5,7 @@ parseIssue(String project, String department) async {
   List<String> documentList = [];
 
   await fetchIssues().then((value) => {
-        value.forEach((element) {
+        value.item1.forEach((element) {
           futureIssues.add(element);
         }),
       });
@@ -31,7 +31,7 @@ parseProject() async {
   List<String> projectsList = [];
 
   await fetchIssues().then((value) => {
-        value.forEach((element) {
+        value.item1.forEach((element) {
           futureIssues.add(element);
         }),
       });
@@ -56,7 +56,7 @@ parseDepartment(String project) async {
   List<String> departmentList = [];
 
   await fetchIssues().then((value) => {
-    value.forEach((element) {
+    value.item1.forEach((element) {
       futureIssues.add(element);
     }),
   });

@@ -1,12 +1,15 @@
-import '../api/spools_services.dart';
+import 'package:tuple/tuple.dart';
+
+import '../api/documents_services.dart';
 
 parseSpool(String docNumber) async {
-  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
 
-  await fetchSpool(docNumber).then((value) => {
-
-        value.forEach((element) {
+  bool connection = true;
+  await fetchDocument(docNumber).then((value) => {
+        connection = value.item2,
+        value.item1.forEach((element) {
           futureSpool.add(element);
         })
       });
@@ -26,18 +29,18 @@ parseSpool(String docNumber) async {
     dis.add(element);
   });
 
-  return dis;
+  return Tuple2(dis, connection);
 }
 
 parseFullSpool(String docNumber) async {
-  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
 
-  await fetchSpool(docNumber).then((value) => {
-    value.forEach((element) {
-      futureSpool.add(element);
-    })
-  });
+  await fetchDocument(docNumber).then((value) => {
+        value.item1.forEach((element) {
+          futureSpool.add(element);
+        })
+      });
 
   for (int i = 0; i < futureSpool.length; i++) {
     spoolsList.add(futureSpool[i].spool);
@@ -52,14 +55,14 @@ parseFullSpool(String docNumber) async {
 }
 
 parseSqInSystem(String docNumber) async {
-  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> sqList = List<String>.empty(growable: true);
 
-  await fetchSpool(docNumber).then((value) => {
-    value.forEach((element) {
-      futureSpool.add(element);
-    })
-  });
+  await fetchDocument(docNumber).then((value) => {
+        value.item1.forEach((element) {
+          futureSpool.add(element);
+        })
+      });
 
   for (int i = 0; i < futureSpool.length; i++) {
     sqList.add(futureSpool[i].sqInSystem.toString());
@@ -74,15 +77,15 @@ parseSqInSystem(String docNumber) async {
 }
 
 sqInSystemToSpool(String docNumber, String sqInSystem) async {
-  List<SpoolData> futureSpool = List<SpoolData>.empty(growable: true);
+  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
   List<int> sqList = List<int>.empty(growable: true);
   String spool = "null";
 
   print(sqInSystem);
 
-  await fetchSpool(docNumber).then((value) => {
-        value.forEach((element) {
+  await fetchDocument(docNumber).then((value) => {
+        value.item1.forEach((element) {
           futureSpool.add(element);
         }),
       });

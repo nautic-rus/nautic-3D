@@ -2,18 +2,28 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:tuple/tuple.dart';
 
-Future<List<IssuesData>> fetchIssues() async {
+Future<Tuple2<List<IssuesData>, bool>> fetchIssues() async {
   var url = 'https://deep-sea.ru/rest/issues?user=op';
-  final response = await http.get(Uri.parse(url));
-  if (response.statusCode == 200) {
-    return (jsonDecode(response.body) as Iterable)
-        .map((e) => IssuesData.fromJson(e))
-        .toList();
-  } else {
-    return
-    throw Exception('Failed to load projects');
+  Tuple2<List<IssuesData>, bool> answer =
+      Tuple2<List<IssuesData>, bool>([], false);
+  print("start connection issues");
+  try {
+    final response =
+        await http.get(Uri.parse(url)).timeout(const Duration(seconds: 20));
+    if (response.statusCode == 200) {
+      answer = Tuple2<List<IssuesData>, bool>(
+          (jsonDecode(response.body) as Iterable)
+              .map((e) => IssuesData.fromJson(e))
+              .toList(),
+          true);
+    }
+  } on TimeoutException {
+    print("connection timeout");
   }
+
+  return answer;
 }
 
 class IssuesData {
