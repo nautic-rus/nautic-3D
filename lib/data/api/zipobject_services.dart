@@ -1,30 +1,32 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 
-Future<Tuple2<Archive, bool>> fetchFiles(String url) async {
+Future<Tuple2<Archive, String>> fetchFiles(String url) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  var data = getData(url);
+  var dataUrl = getData(url);
   print("start connection archive");
-  Tuple2<Archive, bool> answer =  Tuple2<Archive, bool>(Archive(), false);
+  String connectionState = "failed";
+  Archive archive = Archive();
+  Tuple2<Archive, String> answer;
   try {
     final response = await http
-        .get(Uri.parse(getUrl(data)))
-        .timeout(const Duration(seconds: 5));
+        .get(Uri.parse(getUrl(dataUrl)))
+        .timeout(const Duration(seconds: 30));
     print("end connection archive");
     if (response.statusCode == 200) {
-      final archive = ZipDecoder().decodeBytes(response.bodyBytes);
-      return Tuple2<Archive, bool>(archive, true);
+      archive = ZipDecoder().decodeBytes(response.bodyBytes);
+      connectionState = "connect";
+      if (archive.isEmpty) connectionState = "empty";
     }
   } on TimeoutException {
     print("connection timeout");
   }
-
+  answer = Tuple2(archive, connectionState);
   return answer;
 }
 

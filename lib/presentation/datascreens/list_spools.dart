@@ -26,7 +26,7 @@ class _SelectSpool extends State<SelectSpool> {
 
   var brightness;
 
-  bool isConnected = true;
+  String connectionState = "connect";
 
   void refresh() {}
 
@@ -37,7 +37,7 @@ class _SelectSpool extends State<SelectSpool> {
     data[0] = widget.docNumber;
     parseSpool(widget.docNumber).then((value) => {
           setState(() {
-            isConnected = value.item2;
+            connectionState = value.item2;
             value.item1.forEach((element) {
               spoolsList.add(element);
             });
@@ -48,7 +48,7 @@ class _SelectSpool extends State<SelectSpool> {
   @override
   Widget build(BuildContext context) {
     brightness = SchedulerBinding.instance.window.platformBrightness;
-    return isConnected
+    return connectionState == "connect"
         ? spoolsList.isEmpty
             ? isLoading()
             : Container(
@@ -87,19 +87,29 @@ class _SelectSpool extends State<SelectSpool> {
                       );
                     }),
               )
-        : const Center(
-            child: AutoSizeText(
-                "There is no connection to the deep-sea.ru server. Please try again later",
-                style: TextStyle(fontSize: 22, color: Colors.red),
-                maxLines: 3,
-                textAlign: TextAlign.center),
-          );
+        : connectionState == "empty"
+            ? const Center(
+                child: AutoSizeText(
+                    "There is no data on the server for this query",
+                    style: TextStyle(fontSize: 22, color: Colors.red),
+                    maxLines: 3,
+                    textAlign: TextAlign.center),
+              )
+            : Center(
+                child: AutoSizeText(
+                    "No connection to the server, maybe it is broken",
+                    style: TextStyle(fontSize: 22, color: Colors.red),
+                    maxLines: 3,
+                    textAlign: TextAlign.center),
+              );
   }
 
   Widget isLoading() {
     return Center(
         child: LoadingAnimationWidget.threeArchedCircle(
-            color: brightness == Brightness.dark ? Color(0xFF67CAD7) : Color(0xFF2C298A),
+            color: brightness == Brightness.dark
+                ? Color(0xFF67CAD7)
+                : Color(0xFF2C298A),
             size: MediaQuery.of(context).size.width * 0.2));
   }
 

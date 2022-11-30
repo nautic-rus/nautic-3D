@@ -158,8 +158,8 @@ class _QrReaderState extends State<QrReader> {
             saveLastScanUrl(barcode.code.toString());
             Navigator.of(context)
                 .push(MaterialPageRoute(
-                builder: (context) =>
-                    Document(url: barcode.code.toString())))
+                    builder: (context) =>
+                        Document(url: barcode.code.toString())))
                 .then((value) => controller.resumeCamera());
           } else {
             await _dialogBuilder(context);

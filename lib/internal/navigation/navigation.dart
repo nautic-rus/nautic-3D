@@ -76,6 +76,10 @@ class _NavigationState extends State<Navigation> {
         child: Scaffold(
           key: _scaffoldKey,
           body: _kTabPages[_selectedIndex],
+          // body: IndexedStack(
+          //   children: _kTabPages,
+          //   index: _selectedIndex,
+          // ),
           bottomNavigationBar: SizedBox(
             height: MediaQuery.of(context).size.height * 0.065,
             width: MediaQuery.of(context).size.width,

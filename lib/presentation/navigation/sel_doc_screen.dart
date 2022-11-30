@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:nautic_viewer/render_view/main_viewer.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../data/api/issues_services.dart';
 import '../../data/api/zipobject_services.dart';
@@ -19,7 +20,7 @@ class SelectModel extends StatefulWidget {
 }
 
 class _SelectModel extends State<StatefulWidget> {
-  int _pageindex = 0;
+  int _selectedIndex = 0;
   List indexes = [];
 
   StepperType stepperType = StepperType.horizontal;
@@ -45,7 +46,7 @@ class _SelectModel extends State<StatefulWidget> {
   late double width;
   late double height;
 
-  var isConnected = true;
+  String connectionState = "connect";
 
   var brightness;
 
@@ -68,8 +69,9 @@ class _SelectModel extends State<StatefulWidget> {
         departments.add(element);
       });
       departments.sort();
-      indexes.add(_pageindex);
-      _pageindex += 1;
+      indexes.add(_selectedIndex);
+      print(indexes);
+      _selectedIndex++;
     });
   }
 
@@ -89,8 +91,7 @@ class _SelectModel extends State<StatefulWidget> {
         documents.add(element);
       });
       documents.sort();
-      indexes.add(_pageindex);
-      _pageindex += 1;
+      _selectedIndex++;
     });
   }
 
@@ -99,17 +100,15 @@ class _SelectModel extends State<StatefulWidget> {
       selectedDocument = input;
       data[0] = selectedDocument;
       spoolsList.clear();
-      parseSpool(selectedDocument).then((value) =>
-      {
-        setState(() {
-          isConnected = value.item2;
-          value.item1.forEach((element) {
-            spoolsList.add(element);
+      parseSpool(selectedDocument).then((value) => {
+            setState(() {
+              connectionState = value.item2;
+              value.item1.forEach((element) {
+                spoolsList.add(element);
+              });
+            })
           });
-        })
-      });
-      indexes.add(_pageindex);
-      _pageindex += 1;
+      _selectedIndex++;
     });
   }
 
@@ -119,25 +118,44 @@ class _SelectModel extends State<StatefulWidget> {
     data = getData("");
     fetchIssues().then((value) {
       setState(() {
-        isConnected = value.item2;
+        connectionState = value.item2;
         value.item1.forEach((element) {
           futureIssues.add(element);
         });
       });
-      setState(() {
-        for (int i = 0; i < futureIssues.length; i++) {
-          if (futureIssues[i].department == "System" &&
-              futureIssues[i].issue_type == "RKD" &&
-              (futureIssues[i].project == "NR004" ||
-                  futureIssues[i].project == "170701")) {
-            allProjects.add(futureIssues[i].project);
-          }
+      for (int i = 0; i < futureIssues.length; i++) {
+        if (futureIssues[i].department == "System" &&
+            futureIssues[i].issue_type == "RKD" &&
+            (futureIssues[i].project == "NR004" ||
+                futureIssues[i].project == "170701")) {
+          allProjects.add(futureIssues[i].project);
         }
-        allProjects.toSet().forEach((element) {
-          projects.add(element);
-        });
+      }
+      allProjects.toSet().forEach((element) {
+        projects.add(element);
       });
     });
+  }
+
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
+  void _onRefresh() async {
+    // monitor network fetch
+    setState(() {});
+    print("refresh");
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+
+  void _onLoading() async {
+    // monitor network fetch
+    setState(() {});
+    await Future.delayed(Duration(milliseconds: 1000));
+    print("loading");
+    if (mounted) setState(() {});
+    _refreshController.loadComplete();
   }
 
   @override
@@ -145,274 +163,316 @@ class _SelectModel extends State<StatefulWidget> {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     brightness = SchedulerBinding.instance.window.platformBrightness;
-    return WillPopScope(child: Scaffold(
-      appBar: AppBar(
-        title: Container(
-            width: width,
-            height: height * 0.05,
-            alignment: Alignment.center,
-            child: brightness == Brightness.dark
-                ? SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")
-                : SvgPicture.asset("assets/nautic_blue.svg")),
-      ),
-      body: Container(
-        child: Column(
-          children: [
-            Expanded(
-              child: Stepper(
-                currentStep: _pageindex,
-                type: stepperType,
-                physics: ScrollPhysics(),
-                controlsBuilder: (context, _) => Container(),
-                onStepTapped: (step) => tapped(step),
-                onStepContinue: continued,
-                onStepCancel: cancel,
-                steps: <Step>[
-                  Step(
-                    title: const Icon(Icons.directions_boat_outlined),
-                    content: isConnected
-                        ? projects.isEmpty
-                        ? isLoading()
-                        : Column(children: <Widget>[
-                      Container(
-                        child: Text("PROJECTS",
-                            style: TextStyle(
-                                fontSize: 24)),
-                        padding: EdgeInsets.only(bottom: 20),
-                      ),
-                      GridView.builder(
-                          physics: ScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: projects.length,
-                          gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 200,
-                              childAspectRatio: 3 / 1,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20),
-                          itemBuilder: (BuildContext ctx, index) {
-                            return GestureDetector(
-                              onTap: () =>
-                              {selectProject(projects[index])},
-                              child: Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: brightness == Brightness.dark
-                                        ? Colors.white10
-                                        : Colors.grey.shade100,
-                                    borderRadius:
-                                    BorderRadius.circular(40)),
-                                child: Text(projects[index],
-                                    style: TextStyle(
-                                        fontSize: 24)),
+    return WillPopScope(
+        child: Scaffold(
+            appBar: AppBar(
+              title: Container(
+                  width: width * 0.25,
+                  height: height * 0.05,
+                  child: brightness == Brightness.dark
+                      ? SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")
+                      : SvgPicture.asset("assets/nautic_blue.svg")),
+            ),
+            body: SmartRefresher(
+              enablePullDown: true,
+              header: WaterDropMaterialHeader(),
+              onRefresh: _onRefresh,
+              onLoading: _onLoading,
+              controller: _refreshController,
+              child: Container(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Stepper(
+                        currentStep: _selectedIndex,
+                        type: stepperType,
+                        physics: ScrollPhysics(),
+                        controlsBuilder: (context, _) => Container(),
+                        onStepTapped: (step) => tapped(step),
+                        onStepContinue: continued,
+                        onStepCancel: cancel,
+                        steps: <Step>[
+                          Step(
+                            title: const Icon(Icons.directions_boat_outlined),
+                            content: connectionState == "connect"
+                                ? projects.isEmpty
+                                    ? isLoading()
+                                    : Column(children: <Widget>[
+                                        Container(
+                                          child: Text("PROJECTS",
+                                              style: TextStyle(fontSize: 24)),
+                                          padding: EdgeInsets.only(bottom: 20),
+                                        ),
+                                        GridView.builder(
+                                            physics: ScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemCount: projects.length,
+                                            gridDelegate:
+                                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                                                    maxCrossAxisExtent: 200,
+                                                    childAspectRatio: 3 / 1,
+                                                    crossAxisSpacing: 20,
+                                                    mainAxisSpacing: 20),
+                                            itemBuilder:
+                                                (BuildContext ctx, index) {
+                                              return GestureDetector(
+                                                onTap: () => {
+                                                  selectProject(projects[index])
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                      color: brightness ==
+                                                              Brightness.dark
+                                                          ? Colors.white10
+                                                          : Colors
+                                                              .grey.shade100,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              40)),
+                                                  child: Text(projects[index],
+                                                      style: TextStyle(
+                                                          fontSize: 24)),
+                                                ),
+                                              );
+                                            }),
+                                      ])
+                                : connectionState == "empty"
+                                    ? const Center(
+                                        child: AutoSizeText(
+                                            "There is no data on the server for this query",
+                                            style: TextStyle(fontSize: 22),
+                                            maxLines: 3,
+                                            textAlign: TextAlign.center),
+                                      )
+                                    : const Center(
+                                        child: AutoSizeText(
+                                            "No connection to the server, maybe it is broken",
+                                            style: TextStyle(
+                                                fontSize: 22,
+                                                color: Colors.red),
+                                            maxLines: 3,
+                                            textAlign: TextAlign.center),
+                                      ),
+                            isActive: _selectedIndex >= 0,
+                            state: _selectedIndex >= 1
+                                ? StepState.complete
+                                : StepState.disabled,
+                          ),
+                          Step(
+                            title: const Icon(Icons.workspaces_outline),
+                            content: Column(children: <Widget>[
+                              Container(
+                                child: Text("DEPARTMENTS",
+                                    style: TextStyle(fontSize: 24)),
+                                padding: EdgeInsets.only(bottom: 20),
                               ),
-                            );
-                          }),
-                    ])
-                        : const Center(
-                      child: AutoSizeText(
-                          "There is no connection to the deep-sea.ru server. Please try again later",
-                          style:
-                          TextStyle(fontSize: 22, color: Colors.red),
-                          maxLines: 3,
-                          textAlign: TextAlign.center),
+                              GridView.builder(
+                                  physics: ScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: departments.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                                          maxCrossAxisExtent: 330,
+                                          childAspectRatio: 4 / 1,
+                                          crossAxisSpacing: 20,
+                                          mainAxisSpacing: 20),
+                                  itemBuilder: (BuildContext ctx, index) {
+                                    return GestureDetector(
+                                      onTap: () => {
+                                        selectDepartment(departments[index])
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                            color: brightness == Brightness.dark
+                                                ? Colors.white10
+                                                : Colors.grey.shade100,
+                                            borderRadius:
+                                                BorderRadius.circular(40)),
+                                        child: Text(departments[index],
+                                            style: TextStyle(fontSize: 24)),
+                                      ),
+                                    );
+                                  }),
+                            ]),
+                            isActive: _selectedIndex >= 1,
+                            state: _selectedIndex >= 2
+                                ? StepState.complete
+                                : StepState.disabled,
+                          ),
+                          Step(
+                            title: const Icon(Icons.file_copy_outlined),
+                            content: Column(children: <Widget>[
+                              Container(
+                                child: Text("DOCUMENTS",
+                                    style: TextStyle(fontSize: 24)),
+                                padding: EdgeInsets.only(bottom: 20),
+                              ),
+                              GridView.builder(
+                                  physics: ScrollPhysics(),
+                                  shrinkWrap: true,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                                          maxCrossAxisExtent: 400,
+                                          childAspectRatio: 5 / 1,
+                                          crossAxisSpacing: 20,
+                                          mainAxisSpacing: 20),
+                                  itemCount: documents.length,
+                                  itemBuilder: (BuildContext ctx, index) {
+                                    return GestureDetector(
+                                      onTap: () =>
+                                          {selectDocument(documents[index])},
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                            color: brightness == Brightness.dark
+                                                ? Colors.white10
+                                                : Colors.grey.shade100,
+                                            borderRadius:
+                                                BorderRadius.circular(40)),
+                                        child: Text(documents[index],
+                                            style: TextStyle(fontSize: 24)),
+                                      ),
+                                    );
+                                  }),
+                            ]),
+                            isActive: _selectedIndex >= 2,
+                            state: _selectedIndex >= 3
+                                ? StepState.complete
+                                : StepState.disabled,
+                          ),
+                          Step(
+                            title: const Icon(Icons.draw_outlined),
+                            content: connectionState == "connect"
+                                ? spoolsList.isEmpty
+                                    ? isLoading()
+                                    : Column(children: <Widget>[
+                                        Container(
+                                          child: Text("SPOOLS",
+                                              style: TextStyle(fontSize: 24)),
+                                          padding: EdgeInsets.only(bottom: 20),
+                                        ),
+                                        GridView.builder(
+                                            physics: ScrollPhysics(),
+                                            shrinkWrap: true,
+                                            gridDelegate:
+                                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                                                    maxCrossAxisExtent: 200,
+                                                    childAspectRatio: 3 / 1,
+                                                    crossAxisSpacing: 20,
+                                                    mainAxisSpacing: 20),
+                                            itemCount: spoolsList.length,
+                                            itemBuilder:
+                                                (BuildContext ctx, index) {
+                                              return GestureDetector(
+                                                onTap: () => {
+                                                  setState(() {
+                                                    data[1] = spoolsList[index];
+                                                    var url = getUrl(data);
+                                                    print(url);
+                                                    Navigator.of(context)
+                                                        .push(MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ThreeRender(
+                                                                    url: url)))
+                                                        .then((value) =>
+                                                            _selectedIndex =
+                                                                _selectedIndex);
+                                                  })
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                      color: brightness ==
+                                                              Brightness.dark
+                                                          ? Colors.white10
+                                                          : Colors
+                                                              .grey.shade100,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              40)),
+                                                  child: Text(spoolsList[index],
+                                                      style: TextStyle(
+                                                          fontSize: 24)),
+                                                ),
+                                              );
+                                            }),
+                                      ])
+                                : connectionState == "empty"
+                                    ? const Center(
+                                        child: AutoSizeText(
+                                            "There is no data on the server for this query",
+                                            style: TextStyle(fontSize: 22),
+                                            maxLines: 3,
+                                            textAlign: TextAlign.center),
+                                      )
+                                    : const Center(
+                                        child: AutoSizeText(
+                                            "No connection to the server, maybe it is broken",
+                                            style: TextStyle(
+                                                fontSize: 22,
+                                                color: Colors.red),
+                                            maxLines: 3,
+                                            textAlign: TextAlign.center),
+                                      ),
+                            isActive: _selectedIndex == 3,
+                            state: _selectedIndex == 4
+                                ? StepState.complete
+                                : StepState.disabled,
+                          ),
+                        ],
+                      ),
                     ),
-                    isActive: _pageindex >= 0,
-                    state: _pageindex >= 1
-                        ? StepState.complete
-                        : StepState.disabled,
-                  ),
-                  Step(
-                    title: const Icon(Icons.workspaces_outline),
-                    content: Column(children: <Widget>[
-                      Container(
-                        child: Text("DEPARTMENTS",
-                            style:
-                            TextStyle(fontSize: 24)),
-                        padding: EdgeInsets.only(bottom: 20),
-                      ),
-                      GridView.builder(
-                          physics: ScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: departments.length,
-                          gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 330,
-                              childAspectRatio: 4 / 1,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20),
-                          itemBuilder: (BuildContext ctx, index) {
-                            return GestureDetector(
-                              onTap: () =>
-                              {selectDepartment(departments[index])},
-                              child: Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: brightness == Brightness.dark
-                                        ? Colors.white10
-                                        : Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(40)),
-                                child: Text(departments[index],
-                                    style: TextStyle(
-                                        fontSize: 24)),
-                              ),
-                            );
-                          }),
-                    ]),
-                    isActive: _pageindex >= 1,
-                    state: _pageindex >= 2
-                        ? StepState.complete
-                        : StepState.disabled,
-                  ),
-                  Step(
-                    title: const Icon(Icons.file_copy_outlined),
-                    content: Column(children: <Widget>[
-                      Container(
-                        child: Text("DOCUMENTS",
-                            style:
-                            TextStyle(fontSize: 24)),
-                        padding: EdgeInsets.only(bottom: 20),
-                      ),
-                      GridView.builder(
-                          physics: ScrollPhysics(),
-                          shrinkWrap: true,
-                          gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 400,
-                              childAspectRatio: 5 / 1,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20),
-                          itemCount: documents.length,
-                          itemBuilder: (BuildContext ctx, index) {
-                            return GestureDetector(
-                              onTap: () => {selectDocument(documents[index])},
-                              child: Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: brightness == Brightness.dark
-                                        ? Colors.white10
-                                        : Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(40)),
-                                child: Text(documents[index],
-                                    style: TextStyle(
-                                        fontSize: 24)),
-                              ),
-                            );
-                          }),
-                    ]),
-                    isActive: _pageindex >= 2,
-                    state: _pageindex >= 3
-                        ? StepState.complete
-                        : StepState.disabled,
-                  ),
-                  Step(
-                    title: const Icon(Icons.draw_outlined),
-                    content: isConnected
-                        ? spoolsList.isEmpty
-                        ? isLoading()
-                        : Column(children: <Widget>[
-                      Container(
-                        child: Text("SPOOLS",
-                            style: TextStyle(
-                                fontSize: 24)),
-                        padding: EdgeInsets.only(bottom: 20),
-                      ),
-                      GridView.builder(
-                          physics: ScrollPhysics(),
-                          shrinkWrap: true,
-                          gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 200,
-                              childAspectRatio: 3 / 1,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20),
-                          itemCount: spoolsList.length,
-                          itemBuilder: (BuildContext ctx, index) {
-                            return GestureDetector(
-                              onTap: () =>
-                              {
-                                setState(() {
-                                  data[1] = spoolsList[index];
-                                  var url = getUrl(data);
-                                  print(url);
-                                  Navigator.of(context)
-                                      .push(MaterialPageRoute(
-                                      builder: (context) =>
-                                          ThreeRender(url: url)))
-                                      .then((value) =>
-                                  _pageindex = _pageindex);
-                                })
-                              },
-                              child: Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: brightness == Brightness.dark
-                                        ? Colors.white10
-                                        : Colors.grey.shade100,
-                                    borderRadius:
-                                    BorderRadius.circular(40)),
-                                child: Text(spoolsList[index],
-                                    style: TextStyle(
-                                        fontSize: 24)),
-                              ),
-                            );
-                          }),
-                    ])
-                        : const Center(
-                      child: AutoSizeText(
-                          "There is no connection to the deep-sea.ru server. Please try again later",
-                          style:
-                          TextStyle(fontSize: 22, color: Colors.red),
-                          maxLines: 3,
-                          textAlign: TextAlign.center),
-                    ),
-                    isActive: _pageindex == 3,
-                    state: _pageindex == 4
-                        ? StepState.complete
-                        : StepState.disabled,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.list),
-        onPressed: switchStepsType,
-      ),
-    ),         onWillPop: () async {
-      setState(() {
-        if (indexes.length > 0) {
+            floatingActionButton: _selectedIndex > 0
+                ? FloatingActionButton.extended(
+                    label: AutoSizeText("Back",
+                        style: TextStyle(fontSize: 18),
+                        maxLines: 1,
+                        textAlign: TextAlign.center),
+                    onPressed: () => setState(() {
+                          _selectedIndex--;
+                          connectionState = "connect";
+                        }))
+                : null),
+        onWillPop: () async {
           setState(() {
-            _pageindex = indexes[indexes.length - 1];
-            indexes.removeLast();
+            if (indexes.length > 0) {
+              setState(() {
+                _selectedIndex = indexes[indexes.length - 1];
+                print(_selectedIndex);
+                indexes.removeLast();
+              });
+            } else {
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+            }
           });
-        } else {
-          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        }
-      });
-      return false;
-    });
+          return false;
+        });
   }
 
   switchStepsType() {
-    setState(() =>
-    stepperType == StepperType.vertical
+    setState(() => stepperType == StepperType.vertical
         ? stepperType = StepperType.horizontal
         : stepperType = StepperType.vertical);
   }
 
   tapped(int step) {
-    setState(() => _pageindex = step);
+    setState(() {
+      _selectedIndex = step;
+    });
   }
 
   continued() {
-    _pageindex < 3 ? setState(() => _pageindex += 1) : null;
+    _selectedIndex < 3 ? setState(() => _selectedIndex += 1) : null;
   }
 
   cancel() {
-    _pageindex > 0 ? setState(() => _pageindex -= 1) : null;
+    _selectedIndex > 0 ? setState(() => _selectedIndex -= 1) : null;
   }
 
   @override
@@ -424,10 +484,9 @@ class _SelectModel extends State<StatefulWidget> {
   Widget isLoading() {
     return Center(
         child: LoadingAnimationWidget.threeArchedCircle(
-            color: brightness == Brightness.dark ? Color(0xFF67CAD7) : Color(0xFF2C298A),
-            size: MediaQuery
-                .of(context)
-                .size
-                .width * 0.2));
+            color: brightness == Brightness.dark
+                ? Color(0xFF67CAD7)
+                : Color(0xFF2C298A),
+            size: MediaQuery.of(context).size.width * 0.2));
   }
 }

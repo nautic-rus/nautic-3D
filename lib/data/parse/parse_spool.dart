@@ -6,10 +6,11 @@ parseSpool(String docNumber) async {
   List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
 
-  bool connection = true;
+  String connection = "failed";
   await fetchDocument(docNumber).then((value) => {
         connection = value.item2,
         value.item1.forEach((element) {
+          print(element);
           futureSpool.add(element);
         })
       });

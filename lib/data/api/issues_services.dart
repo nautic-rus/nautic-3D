@@ -4,25 +4,29 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 
-Future<Tuple2<List<IssuesData>, bool>> fetchIssues() async {
+Future<Tuple2<List<IssuesData>, String>> fetchIssues() async {
   var url = 'https://deep-sea.ru/rest/issues?user=op';
-  Tuple2<List<IssuesData>, bool> answer =
-      Tuple2<List<IssuesData>, bool>([], false);
+  String connectionState = "failed";
+  List<IssuesData> data = [];
+  Tuple2<List<IssuesData>, String> answer;
+
   print("start connection issues");
+
   try {
     final response =
-        await http.get(Uri.parse(url)).timeout(const Duration(seconds: 20));
+        await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+    print("end connection issues");
     if (response.statusCode == 200) {
-      answer = Tuple2<List<IssuesData>, bool>(
-          (jsonDecode(response.body) as Iterable)
-              .map((e) => IssuesData.fromJson(e))
-              .toList(),
-          true);
+      data = (jsonDecode(response.body) as Iterable)
+          .map((e) => IssuesData.fromJson(e))
+          .toList();
+      connectionState = "connect";
+      if (data.isEmpty) connectionState = "empty";
     }
   } on TimeoutException {
     print("connection timeout");
   }
-
+  answer = Tuple2(data, connectionState);
   return answer;
 }
 

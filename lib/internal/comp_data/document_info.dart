@@ -28,7 +28,7 @@ class _ScanDataState extends State<ScanData> {
 
   var brightness;
 
-  bool isConnected = true;
+  String connectionState = "connect";
 
   late double width;
   late double height;
@@ -45,7 +45,7 @@ class _ScanDataState extends State<ScanData> {
 
     fetchDocument(currentDocNumber).then((value) => {
           setState(() {
-            isConnected = value.item2;
+            connectionState = value.item2;
             value.item1.forEach((element) {
               futureSpool.add(element);
             });
@@ -69,7 +69,7 @@ class _ScanDataState extends State<ScanData> {
 
     return Container(
         alignment: Alignment.center,
-        child: isConnected
+        child: connectionState == "connect"
             ? systemDescr == null
                 ? isLoading()
                 : Column(
@@ -103,34 +103,60 @@ class _ScanDataState extends State<ScanData> {
                           textAlign: TextAlign.center),
                     ],
                   )
-            : Column(
-                children: <Widget>[
-                  AutoSizeText("No connection to server",
-                      style: TextStyle(fontSize: 22, color: Colors.red),
-                      maxLines: 3,
-                      textAlign: TextAlign.center),
-                  SizedBox(
-                    height: height * 0.01,
-                  ),
-                  AutoSizeText("SFI-drawing no.:\n$currentDocNumber",
-                      style: TextStyle(fontSize: 22),
-                      maxLines: 2,
-                      textAlign: TextAlign.center),
-                  SizedBox(
-                    height: height * 0.01,
-                  ),
-                  AutoSizeText("Spool: $currentSpool",
-                      style: TextStyle(fontSize: 22),
-                      maxLines: 1,
-                      textAlign: TextAlign.center),
-                ],
-              ));
+            : connectionState == "empty"
+                ? Column(
+                    children: <Widget>[
+                      AutoSizeText(
+                          "There is no data on the server for this query",
+                          style: TextStyle(fontSize: 22),
+                          maxLines: 3,
+                          textAlign: TextAlign.center),
+                      SizedBox(
+                        height: height * 0.01,
+                      ),
+                      AutoSizeText("SFI-drawing no.:\n$currentDocNumber",
+                          style: TextStyle(fontSize: 22),
+                          maxLines: 2,
+                          textAlign: TextAlign.center),
+                      SizedBox(
+                        height: height * 0.01,
+                      ),
+                      AutoSizeText("Spool: $currentSpool",
+                          style: TextStyle(fontSize: 22),
+                          maxLines: 1,
+                          textAlign: TextAlign.center),
+                    ],
+                  )
+                : Column(
+                    children: <Widget>[
+                      AutoSizeText("No connection to the server, maybe it is broken",
+                          style: TextStyle(fontSize: 22, color: Colors.red),
+                          maxLines: 3,
+                          textAlign: TextAlign.center),
+                      SizedBox(
+                        height: height * 0.01,
+                      ),
+                      AutoSizeText("SFI-drawing no.:\n$currentDocNumber",
+                          style: TextStyle(fontSize: 22),
+                          maxLines: 2,
+                          textAlign: TextAlign.center),
+                      SizedBox(
+                        height: height * 0.01,
+                      ),
+                      AutoSizeText("Spool: $currentSpool",
+                          style: TextStyle(fontSize: 22),
+                          maxLines: 1,
+                          textAlign: TextAlign.center),
+                    ],
+                  ));
   }
 
   Widget isLoading() {
     return Center(
         child: LoadingAnimationWidget.threeArchedCircle(
-            color: brightness == Brightness.dark ? Color(0xFF67CAD7) : Color(0xFF2C298A),
+            color: brightness == Brightness.dark
+                ? Color(0xFF67CAD7)
+                : Color(0xFF2C298A),
             size: MediaQuery.of(context).size.width * 0.2));
   }
 }

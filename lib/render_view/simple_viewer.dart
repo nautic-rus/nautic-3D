@@ -12,6 +12,7 @@ import 'package:three_dart/three3d/math/math.dart';
 import 'package:three_dart/three_dart.dart' as three;
 import 'package:three_dart_jsm/three_dart_jsm.dart' as three_jsm;
 
+import '../connection/if_not_connection.dart';
 import '../data/api/documents_services.dart';
 import '../data/api/zipobject_services.dart';
 
@@ -27,9 +28,9 @@ class SimpleRender extends StatefulWidget {
 }
 
 class _SimpleRender extends State<SimpleRender> {
-  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
-  List<String> fullSpoolsList = List<String>.empty(growable: true);
+  List<String> allSpoolsList = List<String>.empty(growable: true);
+  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<int> sqList = List<int>.empty(growable: true);
 
   final GlobalKey<three_jsm.DomLikeListenableState> _globalKey =
@@ -83,6 +84,17 @@ class _SimpleRender extends State<SimpleRender> {
     currentDocNumber = data[0];
 
     parseSpool(currentDocNumber).then((value) => {
+          if (value.item2 == "empty")
+            {
+              _dialogBuilder(context,
+                  msg: "There is no data on the server for this query"),
+            }
+          else if (value.item2 == "failed")
+            {
+              _dialogBuilder(context,
+                  msg:
+                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later"),
+            },
           setState(() {
             value.item1.forEach((element) {
               spoolsList.add(element);
@@ -91,25 +103,66 @@ class _SimpleRender extends State<SimpleRender> {
         });
 
     fetchDocument(currentDocNumber).then((value) => {
-          value.item1.forEach((element) {
-            futureSpool.add(element);
+          if (value.item2 == "empty")
+            {
+              _dialogBuilder(context,
+                  msg: "There is no data on the server for this query"),
+            }
+          else if (value.item2 == "failed")
+            {
+              _dialogBuilder(context,
+                  msg:
+                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later"),
+            },
+          setState(() {
+            value.item1.forEach((element) {
+              futureSpool.add(element);
+            });
           }),
+          for (int i = 0; i < futureSpool.length; i++)
+            {
+              allSpoolsList.add(futureSpool[i].spool),
+              sqList.add(futureSpool[i].sqInSystem)
+            }
         });
-
-    for (int i = 0; i < futureSpool.length; i++) {
-      spoolsList.add(futureSpool[i].spool);
-      sqList.add(futureSpool[i].sqInSystem);
-    }
 
     // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
 
+  Future<void> _dialogBuilder(BuildContext context, {required String msg}) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Something wrong',
+              style: TextStyle(fontSize: 26), maxLines: 1),
+          content: Text(msg, style: TextStyle(fontSize: 20)),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Ok',
+                  style: TextStyle(fontSize: 22), textAlign: TextAlign.center),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: () {},
-      onDoubleTapDown: (details) => onPointer(details),
-      child: Scaffold(
+    width = MediaQuery.of(context).size.width;
+    height = MediaQuery.of(context).size.height -
+        appBarHeight -
+        MediaQuery.of(context).padding.top;
+
+    return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(appBarHeight),
@@ -117,131 +170,154 @@ class _SimpleRender extends State<SimpleRender> {
             title: Text("3D viewer"),
           ),
         ),
-        body: Builder(
-          builder: (BuildContext context) {
-            initSize(context);
-            return Container(
-              child: _build(context),
-            );
-          },
-        ),
+        body: SizedBox(
+          width: width,
+          height: height,
+          child: state
+              ? Builder(
+                  builder: (BuildContext context) {
+                    initSize(context);
+                    return GestureDetector(
+                      onDoubleTap: () {},
+                      onDoubleTapDown: (details) => onPointer(details),
+                      child: Container(
+                        child: _build(context),
+                      ),
+                    );
+                  },
+                )
+              : Builder(
+                  builder: (BuildContext context) {
+                    initSize(context);
+                    return Container(
+                      child: _build(context),
+                    );
+                  },
+                ),
+        ));
+  }
+
+  Widget _build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Stack(
+        children: [
+          three_jsm.DomLikeListenable(
+              key: _globalKey,
+              builder: (BuildContext context) {
+                return Container(
+                    width: width,
+                    height: height,
+                    color: Colors.white,
+                    child: Builder(builder: (BuildContext context) {
+                      if (kIsWeb) {
+                        return three3dRender.isInitialized
+                            ? HtmlElementView(
+                                viewType: three3dRender.textureId!.toString())
+                            : Container();
+                      } else {
+                        return three3dRender.isInitialized
+                            ? Texture(textureId: three3dRender.textureId!)
+                            : Container();
+                      }
+                    }));
+              }),
+          Positioned(
+            child: state
+                ? Container(
+                    width: width,
+                    height: height,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white54,
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(50),
+                                bottomRight: Radius.circular(50)),
+                          ),
+                          child: SizedBox(
+                            width: width,
+                            height: height / 10.0,
+                            child: Column(
+                              children: <Widget>[
+                                Text("Document: $currentDocNumber",
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.black),
+                                    textAlign: TextAlign.center),
+                                Text("Spool: $currentSpool",
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.black),
+                                    textAlign: TextAlign.center),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.symmetric(horizontal: 20),
+                              height: width * 0.15,
+                              width: width * 0.2,
+                              child: IconButton(
+                                onPressed: () => {setView(boundingBox)},
+                                icon: Icon(Icons.center_focus_strong),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.white54,
+                                  primary: Colors.black,
+                                  onSurface: Colors.white,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: height * 0.025,
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    width: width,
+                    height: height,
+                    color: Colors.grey.shade600.withOpacity(0.5),
+                    child: LoadingAnimationWidget.threeArchedCircle(
+                        color: Colors.white,
+                        size: MediaQuery.of(context).size.width * 0.2),
+                  ),
+          ),
+          Positioned(
+              child: CheckConnectionPage(
+            page: Container(
+              width: width,
+              height: height,
+            ),
+          ))
+        ],
       ),
     );
   }
 
-  Widget _build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            three_jsm.DomLikeListenable(
-                key: _globalKey,
-                builder: (BuildContext context) {
-                  return Container(
-                      width: width,
-                      height: height,
-                      color: Colors.white,
-                      child: Builder(builder: (BuildContext context) {
-                        if (kIsWeb) {
-                          return three3dRender.isInitialized
-                              ? HtmlElementView(
-                                  viewType: three3dRender.textureId!.toString())
-                              : Container();
-                        } else {
-                          return three3dRender.isInitialized
-                              ? Texture(textureId: three3dRender.textureId!)
-                              : Container();
-                        }
-                      }));
-                }),
-            Positioned(
-              child: state
-                  ? Container(
-                      width: width,
-                      height: height,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white54,
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(50),
-                                  bottomRight: Radius.circular(50)),
-                            ),
-                            child: SizedBox(
-                              width: width,
-                              height: height / 10.0,
-                              child: Column(
-                                children: <Widget>[
-                                  Text("Document: $currentDocNumber",
-                                      style: TextStyle(fontSize: 20),
-                                      textAlign: TextAlign.center),
-                                  Text("Spool: $currentSpool",
-                                      style: TextStyle(fontSize: 20),
-                                      textAlign: TextAlign.center),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.symmetric(horizontal: 20),
-                                height: width * 0.15,
-                                width: width * 0.15,
-                                child: IconButton(
-                                  onPressed: () => {setView(boundingBox)},
-                                  icon: Icon(Icons.center_focus_strong),
-                                  style: TextButton.styleFrom(
-                                    backgroundColor: Colors.white54,
-                                    primary: Colors.black,
-                                    onSurface: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: height * 0.025,
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(
-                      width: width,
-                      height: height,
-                      color: Colors.grey.shade600.withOpacity(0.5),
-                      child: LoadingAnimationWidget.threeArchedCircle(
-                          color: Colors.white,
-                          size: MediaQuery.of(context).size.width * 0.2),
-                    ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   onPointer(details) {
-    setState(() {
-      state = false;
-    });
+    state = false;
     pointer.x = (details.globalPosition.dx / screenSize!.width) * 2 - 1;
     pointer.y = -(details.globalPosition.dy /
-                (screenSize!.height +
-                    appBarHeight +
-                    MediaQuery.of(context).padding.top)) *
-            2 +
+        (screenSize!.height +
+            appBarHeight +
+            MediaQuery.of(context).padding.top)) *
+        2 +
         1;
+
     print(pointer.x);
     print(pointer.y);
 
     raycaster.setFromCamera(pointer, camera);
     var intersects = raycaster.intersectObjects(scene.children, true);
 
-    if (intersects.isNotEmpty) {
+    if (intersects.isNotEmpty && intersects[0].object.name != "axes") {
       if (INTERSECTED != intersects[0].object) {
         scene.children.forEach((gr) => {
               if (gr.type == 'Group')
@@ -253,23 +329,13 @@ class _SimpleRender extends State<SimpleRender> {
                       })
                 }
             });
-
+        print("defferent");
         INTERSECTED = intersects[0].object;
 
         for (var i = 0; i < intersects.length; i++) {
-          // intersects[0].object.parent?.material.color.set(0x9D7E7E);
-          intersects[0].object.parent?.parent?.children.forEach((ch) {
-            ch.children.forEach((mesh) {
-              mesh.material.color.set(0x9D7E7E);
-            });
-          });
-          scaleView(intersects[0].object.parent!.parent!);
+          intersects[0].object.material.color.set(0x9D7E7E);
+          scaleView(intersects[0].object);
           // currentSpool = intersects[0].object.parent?.parent?.name;
-          // sqInSystemToSpool(currentDocNumber, intersects[0].object.parent!.name).then((value) {
-          //   currentSpool = value;
-          // });
-
-          currentSpool = intersects[0].object.name;
         }
         print("hit");
       }
@@ -410,14 +476,6 @@ class _SimpleRender extends State<SimpleRender> {
     animate();
   }
 
-  loadAllSpools() {
-    spoolsList.forEach((spool) {
-      widget.url = getUrl([currentDocNumber, spool, data[2]]);
-      print(spool);
-      loadObjFromZip(spool);
-    });
-  }
-
   replaceObjScene(String name) {
     boundingBox = three.Box3();
     for (var i = scene.children.length - 1; i >= 0; i--) {
@@ -462,11 +520,6 @@ class _SimpleRender extends State<SimpleRender> {
 
               (loader.parse(formatted.join('\n')) as Future<dynamic>)
                   .then((model) => {
-                        for (int i = 0; i < spoolsList.length; i++)
-                          {
-                            if (file.name == sqList[i].toString())
-                              {model.name = spoolsList[i]}
-                          },
                         group.add(model),
                         if (++archiveFiles == archive.item1.files.length)
                           {scene.add(group), group.rotation.x = -Math.PI / 2}

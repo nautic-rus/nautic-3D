@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:convert' show utf8;
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -91,7 +92,17 @@ class _ThreeRender extends State<ThreeRender> {
     addingSpool = currentSpool;
 
     parseSpool(currentDocNumber).then((value) => {
-          if (!value.item2) _dialogBuilder(context),
+          if (value.item2 == "empty")
+            {
+              _dialogBuilder(context,
+                  msg: "There is no data on the server for this query"),
+            }
+          else if (value.item2 == "failed")
+            {
+              _dialogBuilder(context,
+                  msg:
+                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later"),
+            },
           setState(() {
             value.item1.forEach((element) {
               spoolsList.add(element);
@@ -104,26 +115,21 @@ class _ThreeRender extends State<ThreeRender> {
     // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
 
-  Future<void> _dialogBuilder(BuildContext context) {
+  Future<void> _dialogBuilder(BuildContext context, {required String msg}) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Something wrong',
-              style: TextStyle(fontSize: 26),
-              maxLines: 1),
-          content: const Text(
-              'There is no connection to the deep-sea.ru server. \n\nPlease try again later',
-              style: TextStyle(fontSize: 20),
-              maxLines: 3),
+              style: TextStyle(fontSize: 26), maxLines: 1),
+          content: Text(msg, style: TextStyle(fontSize: 20)),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
               child: const Text('Ok',
-                  style: TextStyle(fontSize: 22),
-                  textAlign: TextAlign.center),
+                  style: TextStyle(fontSize: 22), textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context);
@@ -223,12 +229,14 @@ class _ThreeRender extends State<ThreeRender> {
                             height: height / 10.0,
                             child: Column(
                               children: <Widget>[
-                                Text("Document: $currentDocNumber",
-                                    style: TextStyle(fontSize: 20),
+                                AutoSizeText("Document: $currentDocNumber",
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.black),
                                     textAlign: TextAlign.center),
-                                Text(
+                                AutoSizeText(
                                     "Spool: $currentSpool | Adding spool: $addingSpool",
-                                    style: TextStyle(fontSize: 20),
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.black),
                                     textAlign: TextAlign.center),
                               ],
                             ),
@@ -644,11 +652,13 @@ class _ThreeRender extends State<ThreeRender> {
             group = three.Group();
             group.name = name;
             var archiveFiles = 0;
-            if (!archive.item2) {
-              setState(() {
-                _dialogBuilder(context);
-                // Navigator.of(context).pop();
-              });
+            if (archive.item2 == "empty") {
+              _dialogBuilder(context,
+                  msg: "There is no data on the server for this query");
+            } else if (archive.item2 == "failed") {
+              _dialogBuilder(context,
+                  msg:
+                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later");
             }
             archive.item1.files.forEach((file) {
               print(getSqInSystem(file.name));

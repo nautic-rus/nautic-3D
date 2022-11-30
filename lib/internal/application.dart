@@ -56,7 +56,7 @@ const FlexSchemeData _myFlexScheme = FlexSchemeData(
   description: 'Midnight blue theme, custom definition of all colors',
   light: FlexSchemeColor(
     primary: Color(0xFF2C298A),
-    primaryContainer: Color(0xFFD1C4E9),
+    primaryContainer: Color(0xFF2C298A),
     secondary: Color(0xFF67CAD7),
     secondaryContainer: Color(0xFFCFE4FF),
     tertiary: Color(0xFF00B0FF),
@@ -64,7 +64,7 @@ const FlexSchemeData _myFlexScheme = FlexSchemeData(
   ),
   dark: FlexSchemeColor(
     primary: Color(0xFF67CAD7),
-    primaryContainer: Color(0xFFD1C4E9),
+    primaryContainer: Color(0xFF1F9BAB),
     secondary: Color(0xFF67CAD7),
     secondaryContainer: Color(0xFFCFE4FF),
     tertiary: Color(0xFF00B0FF),
