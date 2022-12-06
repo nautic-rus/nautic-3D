@@ -14,7 +14,7 @@ packages:
       name: archive
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.3.4"
+    version: "3.3.5"
   async:
     dependency: transitive
     description:
@@ -260,7 +260,7 @@ packages:
       name: introduction_screen
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.2"
+    version: "3.1.1"
   js:
     dependency: transitive
     description:
@@ -358,7 +358,7 @@ packages:
       name: path_provider_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.21"
+    version: "2.0.22"
   path_provider_ios:
     dependency: transitive
     description:
@@ -517,14 +517,14 @@ packages:
       name: three_dart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.15"
+    version: "0.0.16"
   three_dart_jsm:
     dependency: "direct main"
     description:
       name: three_dart_jsm
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.9"
+    version: "0.0.10"
   tuple:
     dependency: "direct main"
     description:
@@ -566,14 +566,14 @@ packages:
       name: url_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.1.6"
+    version: "6.1.7"
   url_launcher_android:
     dependency: transitive
     description:
       name: url_launcher_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.0.21"
+    version: "6.0.22"
   url_launcher_ios:
     dependency: transitive
     description:
@@ -629,7 +629,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.1.1"
+    version: "3.1.2"
   xdg_directories:
     dependency: transitive
     description:

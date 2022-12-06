@@ -580,7 +580,7 @@ class _RayCast extends State<RayCast> {
     var fitOffset = 1.2;
     var maxSize = Math.max(size.x, Math.max(size.y, size.z));
     var fitHeightDistance =
-        maxSize / (2 * Math.atan(Math.PI * camera.fov / 360));
+        maxSize / (2 * Math.atan(Math.pi * camera.fov / 360));
     var fitWidthDistance = fitHeightDistance / camera.aspect;
     var distance = fitOffset * Math.max(fitHeightDistance, fitWidthDistance);
 

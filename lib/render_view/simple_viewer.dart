@@ -464,7 +464,7 @@ class _SimpleRender extends State<SimpleRender> {
     axes = three.AxesHelper(100000);
     axes.name = "axes";
     localToCameraAxesPlacement = controls.target;
-    axes.rotation.x = -Math.PI / 2;
+    axes.rotation.x = -Math.pi / 2;
     scene.add(axes);
 
     controls.update();
@@ -522,7 +522,7 @@ class _SimpleRender extends State<SimpleRender> {
                   .then((model) => {
                         group.add(model),
                         if (++archiveFiles == archive.item1.files.length)
-                          {scene.add(group), group.rotation.x = -Math.PI / 2}
+                          {scene.add(group), group.rotation.x = -Math.pi / 2}
                       });
             });
           })
@@ -570,7 +570,7 @@ class _SimpleRender extends State<SimpleRender> {
   }
 
   addToView(three.Object3D object) {
-    object.rotation.x = -Math.PI / 2;
+    object.rotation.x = -Math.pi / 2;
     boundingBox.expandByObject(object);
     setView(boundingBox);
   }
@@ -581,7 +581,7 @@ class _SimpleRender extends State<SimpleRender> {
   }
 
   createScaleView(three.Object3D object) {
-    object.rotation.x = -Math.PI / 2;
+    object.rotation.x = -Math.pi / 2;
     boundingBox.expandByObject(object);
     reBox = three.Box3().setFromObject(object);
     setView(reBox);
@@ -609,7 +609,7 @@ class _SimpleRender extends State<SimpleRender> {
     var fitOffset = 1.2;
     var maxSize = Math.max(size.x, Math.max(size.y, size.z));
     var fitHeightDistance =
-        maxSize / (2 * Math.atan(Math.PI * camera.fov / 360));
+        maxSize / (2 * Math.atan(Math.pi * camera.fov / 360));
     var fitWidthDistance = fitHeightDistance / camera.aspect;
     var distance = fitOffset * Math.max(fitHeightDistance, fitWidthDistance);
 

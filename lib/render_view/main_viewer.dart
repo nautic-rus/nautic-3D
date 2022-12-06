@@ -617,7 +617,7 @@ class _ThreeRender extends State<ThreeRender> {
     axes = three.AxesHelper(100000);
     axes.name = "axes";
     localToCameraAxesPlacement = controls.target;
-    axes.rotation.x = -Math.PI / 2;
+    axes.rotation.x = -Math.pi / 2;
     scene.add(axes);
 
     controls.update();
@@ -699,7 +699,7 @@ class _ThreeRender extends State<ThreeRender> {
   }
 
   addToView(three.Object3D object) {
-    object.rotation.x = -Math.PI / 2;
+    object.rotation.x = -Math.pi / 2;
     boundingBox.expandByObject(object);
     setView(boundingBox);
   }
@@ -720,7 +720,7 @@ class _ThreeRender extends State<ThreeRender> {
     var fitOffset = 1.2;
     var maxSize = Math.max(size.x, Math.max(size.y, size.z));
     var fitHeightDistance =
-        maxSize / (2 * Math.atan(Math.PI * camera.fov / 360));
+        maxSize / (2 * Math.atan(Math.pi * camera.fov / 360));
     var fitWidthDistance = fitHeightDistance / camera.aspect;
     var distance = fitOffset * Math.max(fitHeightDistance, fitWidthDistance);
 
