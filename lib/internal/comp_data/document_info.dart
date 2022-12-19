@@ -8,27 +8,26 @@ import '../../data/api/zipobject_services.dart';
 import '../../data/parse/parse_doc.dart';
 
 class ScanData extends StatefulWidget {
-  ScanData({Key? key, required this.url}) : super(key: key);
+  ScanData({Key? key, required this.futureDocs, required this.data, required this.connectionState})
+      : super(key: key);
 
-  String url;
+  List<DocData> futureDocs;
+  List data;
+  String connectionState;
 
   @override
   State<ScanData> createState() => _ScanDataState();
 }
 
 class _ScanDataState extends State<ScanData> {
-  List<DocData> futureSpool = List<DocData>.empty(growable: true);
   List<String> spoolsList = List<String>.empty(growable: true);
 
-  var data;
   var currentDocNumber;
   var currentSpool;
   var systemDescr;
   var line;
 
   var brightness;
-
-  String connectionState = "connect";
 
   late double width;
   late double height;
@@ -38,26 +37,18 @@ class _ScanDataState extends State<ScanData> {
     // TODO: implement initState
     super.initState();
 
-    data = getData(widget.url);
-    currentDocNumber = data[0];
-    currentSpool = data[1];
+    currentDocNumber = widget.data[0];
+    currentSpool = widget.data[1];
     print(currentSpool);
 
-    fetchDocument(currentDocNumber).then((value) => {
-          setState(() {
-            connectionState = value.item2;
-            value.item1.forEach((element) {
-              futureSpool.add(element);
-            });
-
-            for (int i = 0; i < futureSpool.length; i++) {
-              if (futureSpool[i].spool == currentSpool) {
-                systemDescr = getSystemDescr(futureSpool[i].systemDescr);
-                line = futureSpool[i].line;
-              }
-            }
-          })
-        });
+    setState(() {
+      for (int i = 0; i < widget.futureDocs.length; i++) {
+        if ( widget.futureDocs[i].spool == currentSpool) {
+          systemDescr = getSystemDescr( widget.futureDocs[i].systemDescr);
+          line =  widget.futureDocs[i].line;
+        }
+      }
+    });
   }
 
   @override
@@ -69,10 +60,9 @@ class _ScanDataState extends State<ScanData> {
 
     return Container(
         alignment: Alignment.center,
-        child: connectionState == "connect"
-            ? systemDescr == null
-                ? isLoading()
-                : Column(
+        child: widget.connectionState == "connect"
+            ? systemDescr != null
+                ? Column(
                     children: <Widget>[
                       // Text("Name: $currentDocNumber",
                       //     style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
@@ -103,8 +93,7 @@ class _ScanDataState extends State<ScanData> {
                           textAlign: TextAlign.center),
                     ],
                   )
-            : connectionState == "empty"
-                ? Column(
+            : Column(
                     children: <Widget>[
                       AutoSizeText(
                           "There is no data on the server for this query",
@@ -129,7 +118,8 @@ class _ScanDataState extends State<ScanData> {
                   )
                 : Column(
                     children: <Widget>[
-                      AutoSizeText("No connection to the server, maybe it is broken",
+                      AutoSizeText(
+                          "No connection to the server, maybe it is broken",
                           style: TextStyle(fontSize: 22, color: Colors.red),
                           maxLines: 3,
                           textAlign: TextAlign.center),

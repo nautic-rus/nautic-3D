@@ -77,7 +77,7 @@ class _History extends State<History> {
                           data[1] = spoolsList[_index];
                           var url = getUrl(data);
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => Document(url: url)));
+                              builder: (context) => Document(data: [], futureDocs: [], connectionState: "",)));
                         })
                       },
                       child: Container(

@@ -72,7 +72,7 @@ class _SpoolsState extends State<Spools> {
           data[1] = spoolsList[selectedIndex];
           var url = getUrl(data);
           Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => ThreeRender(url: url)));
+              MaterialPageRoute(builder: (context) => ThreeRender(data: [])));
         });
       },
       child: Container(

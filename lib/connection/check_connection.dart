@@ -1,16 +1,16 @@
 import 'dart:io';
 
-Future<bool> isInternetConnected() async {
+Future<String> isInternetConnected() async {
   try {
     final result = await InternetAddress.lookup('deep-sea.ru');
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-      print('connected');
-      return true;
+      print('connected to deepsea');
+      return "connect";
     } else {
-      return false;
+      return "failed";
     }
   } on SocketException catch (_) {
-    print('not connected');
-    return false;
+    print('failed to deepsea');
+    return "failed";
   }
 }

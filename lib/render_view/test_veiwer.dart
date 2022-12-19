@@ -528,7 +528,7 @@ class _RayCast extends State<RayCast> {
     var loader = three_jsm.OBJLoader(null);
     bool first = true;
 
-    fetchFiles(widget.url).then((archive) => {
+    fetchFiles([]).then((archive) => {
           // scene.clear(),
           setState(() {
             group = three.Group();

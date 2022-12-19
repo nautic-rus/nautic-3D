@@ -9,7 +9,9 @@ import '../../data/api/zipobject_services.dart';
 import '../../data/parse/parse_spool.dart';
 
 class SelectSpool extends StatefulWidget {
-  SelectSpool({Key? key, required this.docNumber}) : super(key: key);
+  SelectSpool(
+      {Key? key, required this.docNumber})
+      : super(key: key);
 
   String docNumber;
 
@@ -68,10 +70,8 @@ class _SelectSpool extends State<SelectSpool> {
                           setState(() {
                             _index = index;
                             data[1] = spoolsList[_index];
-                            var url = getUrl(data);
-                            print(url);
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => ThreeRender(url: url)));
+                                builder: (context) => ThreeRender(data: data)));
                           })
                         },
                         child: Container(

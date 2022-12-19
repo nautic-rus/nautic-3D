@@ -1,10 +1,15 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart' as http;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
+import '../../connection/check_connection.dart';
+import '../../data/api/documents_services.dart';
+import '../../data/api/issues_services.dart';
+import '../../data/api/zipobject_services.dart';
+import '../../internal/localfiles/local_files.dart';
 import '../../internal/navigation/navigation.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,99 +20,133 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  List<DocData> futureDocs = List<DocData>.empty(growable: true);
+  List<IssuesData> futureIssues = List<IssuesData>.empty(growable: true);
+
   bool isInternetAvailable = false;
   late double width;
   late double height;
 
+  late List data;
+  late String currentDocNumber;
+
+  Timer? timer;
+
+  var brightness;
+
+  String connectionState = "connect";
+
+  String url = "";
+
+  late Future<dynamic> urlFuture = getLastScanUrl();
+
   @override
   void initState() {
-    isInternetConnected().then((value) {
+    super.initState();
+
+    isInternetConnected().then((value) => setState(() {
+          connectionState = value;
+          print(connectionState);
+          value == "connect" ? _loadingDataConnect() : _loadingDataNoConnect();
+        }));
+
+    Future.delayed(const Duration(seconds: 30), () {
+      _loadingDataNoConnect();
+    });
+  }
+
+  _setData() async {
+    await urlFuture.then((value) => setState(() {
+          url = value;
+        }));
+
+    print(url);
+    data = getData(url);
+    currentDocNumber = data[0];
+  }
+
+  _setFetchDocument() async {
+    await fetchDocument(currentDocNumber).then((value) => {
+          setState(() {
+            connectionState = value.item2;
+            value.item1.forEach((element) {
+              futureDocs.add(element);
+            });
+            print(connectionState);
+          })
+        });
+  }
+
+  _setFetchIssues() async {
+    await fetchIssues().then((value) {
       setState(() {
-        isInternetAvailable = value;
+        connectionState = value.item2;
+        value.item1.forEach((element) {
+          futureIssues.add(element);
+        });
+        print(connectionState);
       });
     });
-    super.initState();
-    _navigateToHome();
   }
 
-  Future<bool> isInternetConnected() async {
-    try {
-      final result = await InternetAddress.lookup('deep-sea.ru');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        print('connected');
-        return true;
-      } else {
-        return false;
-      }
-    } on SocketException catch (_) {
-      print('not connected');
-      return false;
-    }
+  _loadingDataConnect() async {
+    await _setData();
+    await _setFetchDocument();
+    await _setFetchIssues();
+    await _goToNavigation(context);
   }
 
-  Future<bool> isDeepseaConnected() async {
-    var url = 'https://deep-sea.ru/rest/ping';
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      return false;
-    }
+  _loadingDataNoConnect() async {
+    await _setData();
+    await _goToNavigation(context);
   }
 
-  _navigateToHome() async {
-    await Future.delayed(Duration(milliseconds: 1500), () {});
-
-    if (isInternetAvailable) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Navigation()));
-    } else {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Navigation()));
-    }
-  }
-
-  Future<void> _dialogBuilder(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Message'),
-          content: const Text(
-              'No connection to server, application functions are limited'),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Ok'),
-              onPressed: () {
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => Navigation()));
-              },
-            ),
-          ],
-        );
-      },
-    );
+  _goToNavigation(BuildContext context) {
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => Navigation(
+                  futureDocs: futureDocs,
+                  futureIssues: futureIssues,
+                  connectionState: connectionState,
+                  data: data,
+                )));
   }
 
   @override
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
-    var brightness = SchedulerBinding.instance.window.platformBrightness;
+    brightness = SchedulerBinding.instance.window.platformBrightness;
     print(brightness);
     return Scaffold(
-      body: Center(
-        child: Container(
-            width: width * 0.7,
-            height: height * 0.3,
-            alignment: Alignment.center,
-            child: brightness == Brightness.dark
-                ? SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")
-                : SvgPicture.asset("assets/nautic_blue.svg")),
-      ),
-    );
+        body: Stack(
+      children: <Widget>[
+        Center(
+          child: Container(
+              width: width * 0.7,
+              height: height * 0.3,
+              alignment: Alignment.center,
+              child: brightness == Brightness.dark
+                  ? SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")
+                  : SvgPicture.asset("assets/nautic_blue.svg")),
+        ),
+        Positioned(child: Container(
+          width: width,
+          height: height,
+          alignment: Alignment.bottomCenter,
+          padding: EdgeInsets.only(bottom: height * 0.1),
+          child: isLoading(),
+        ))
+      ],
+    ));
+  }
+
+  Widget isLoading() {
+    return LoadingAnimationWidget.threeArchedCircle(
+        color: brightness == Brightness.dark
+            ? Color(0xFF67CAD7)
+            : Color(0xFF2C298A),
+        size: MediaQuery.of(context).size.height * 0.05);
   }
 }

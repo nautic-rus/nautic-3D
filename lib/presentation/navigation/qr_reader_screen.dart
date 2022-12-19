@@ -6,11 +6,16 @@ import 'package:nautic_viewer/data/api/zipobject_services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/api/documents_services.dart';
 import '../../internal/localfiles/local_files.dart';
 import '../datascreens/data_from_scanner.dart';
 
 class QrReader extends StatefulWidget {
-  const QrReader({Key? key}) : super(key: key);
+  QrReader({Key? key, required this.futureDocs, required this.connectionState})
+      : super(key: key);
+
+  List<DocData> futureDocs;
+  String connectionState;
 
   @override
   State<QrReader> createState() => _QrReaderState();
@@ -79,7 +84,9 @@ class _QrReaderState extends State<QrReader> {
       padding: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: brightness == Brightness.dark ? Color(0xFF67CAD7) : Color(0xFF2C298A),
+        color: brightness == Brightness.dark
+            ? Color(0xFF67CAD7)
+            : Color(0xFF2C298A),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -158,8 +165,11 @@ class _QrReaderState extends State<QrReader> {
             saveLastScanUrl(barcode.code.toString());
             Navigator.of(context)
                 .push(MaterialPageRoute(
-                    builder: (context) =>
-                        Document(url: barcode.code.toString())))
+                    builder: (context) => Document(
+                          data: getData(barcode.code.toString()),
+                          futureDocs: widget.futureDocs,
+                          connectionState: widget.connectionState,
+                        )))
                 .then((value) => controller.resumeCamera());
           } else {
             await _dialogBuilder(context);

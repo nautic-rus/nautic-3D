@@ -5,17 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 
-Future<Tuple2<Archive, String>> fetchFiles(String url) async {
+Future<Tuple2<Archive, String>> fetchFiles(List data) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  var dataUrl = getData(url);
   print("start connection archive");
   String connectionState = "failed";
   Archive archive = Archive();
   Tuple2<Archive, String> answer;
   try {
     final response = await http
-        .get(Uri.parse(getUrl(dataUrl)))
+        .get(Uri.parse(getUrl(data)))
         .timeout(const Duration(seconds: 30));
     print("end connection archive");
     if (response.statusCode == 200) {
@@ -45,6 +44,14 @@ getData(String url) {
 
 validateUrl(String url) {
   var data = getData(url);
+  if (data[0] == "" || data[1] == "") {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+validateData(List data) {
   if (data[0] == "" || data[1] == "") {
     return false;
   } else {

@@ -18,9 +18,9 @@ import '../data/api/documents_services.dart';
 import '../data/api/zipobject_services.dart';
 
 class ThreeRender extends StatefulWidget {
-  ThreeRender({Key? key, required this.url}) : super(key: key);
+  ThreeRender({Key? key, required this.data}) : super(key: key);
 
-  String url;
+  List data;
 
   @override
   State<ThreeRender> createState() => _ThreeRender();
@@ -72,7 +72,6 @@ class _ThreeRender extends State<ThreeRender> {
   var appBarHeight = 50.0;
 
   var localToCameraAxesPlacement;
-  var data;
   var currentSpoolIndex;
   var currentSpool;
   var currentDocNumber;
@@ -86,24 +85,17 @@ class _ThreeRender extends State<ThreeRender> {
   @override
   void initState() {
     super.initState();
-    data = getData(widget.url);
-    currentDocNumber = data[0];
-    currentSpool = data[1];
+    currentDocNumber = widget.data[0];
+    currentSpool = widget.data[1];
     addingSpool = currentSpool;
 
     parseSpool(currentDocNumber).then((value) => {
-          if (value.item2 == "empty")
-            {
-              _dialogBuilder(context,
-                  msg: "There is no data on the server for this query"),
-            }
-          else if (value.item2 == "failed")
-            {
-              _dialogBuilder(context,
+          setState(() async {
+            if (value.item2 == "failed") {
+              await _dialogBuilder(context,
                   msg:
-                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later"),
-            },
-          setState(() {
+                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later");
+            }
             value.item1.forEach((element) {
               spoolsList.add(element);
             });
@@ -406,15 +398,13 @@ class _ThreeRender extends State<ThreeRender> {
       state = false;
       currentSpoolIndex = checkNextSpool(++currentSpoolIndex);
       print(currentSpoolIndex);
-      data[1] = spoolsList[currentSpoolIndex];
-      if (currentSpool != data[1]) {
-        currentSpool = data[1];
+      widget.data[1] = spoolsList[currentSpoolIndex];
+      if (currentSpool != widget.data[1]) {
+        currentSpool = widget.data[1];
         nextSpoolIndex = currentSpoolIndex;
         previousSpoolIndex = currentSpoolIndex;
         addingSpool = currentSpool;
-        widget.url = getUrl(data);
         replaceObjScene(currentSpool);
-        print(widget.url);
       } else {
         state = true;
       }
@@ -426,15 +416,13 @@ class _ThreeRender extends State<ThreeRender> {
       state = false;
       currentSpoolIndex = checkPreviousSpool(--currentSpoolIndex);
       print(currentSpoolIndex);
-      data[1] = spoolsList[currentSpoolIndex];
-      if (currentSpool != data[1]) {
-        currentSpool = data[1];
+      widget.data[1] = spoolsList[currentSpoolIndex];
+      if (currentSpool != widget.data[1]) {
+        currentSpool = widget.data[1];
         nextSpoolIndex = currentSpoolIndex;
         previousSpoolIndex = currentSpoolIndex;
         addingSpool = currentSpool;
-        widget.url = getUrl(data);
         replaceObjScene(currentSpool);
-        print(widget.url);
       } else {
         state = true;
       }
@@ -446,12 +434,10 @@ class _ThreeRender extends State<ThreeRender> {
       state = false;
       nextSpoolIndex = checkNextSpool(++nextSpoolIndex);
       print(nextSpoolIndex);
-      data[1] = spoolsList[nextSpoolIndex];
-      if (addingSpool != data[1]) {
-        addingSpool = data[1];
-        widget.url = getUrl(data);
+      widget.data[1] = spoolsList[nextSpoolIndex];
+      if (addingSpool != widget.data[1]) {
+        addingSpool = widget.data[1];
         addObjScene(addingSpool);
-        print(widget.url);
       } else {
         state = true;
       }
@@ -463,12 +449,10 @@ class _ThreeRender extends State<ThreeRender> {
       state = false;
       previousSpoolIndex = checkPreviousSpool(--previousSpoolIndex);
       print(previousSpoolIndex);
-      data[1] = spoolsList[previousSpoolIndex];
-      if (addingSpool != data[1]) {
-        addingSpool = data[1];
-        widget.url = getUrl(data);
+      widget.data[1] = spoolsList[previousSpoolIndex];
+      if (addingSpool != widget.data[1]) {
+        addingSpool = widget.data[1];
         addObjScene(addingSpool);
-        print(widget.url);
       } else {
         state = true;
       }
@@ -646,7 +630,7 @@ class _ThreeRender extends State<ThreeRender> {
     var loader = three_jsm.OBJLoader(null);
     bool first = true;
 
-    fetchFiles(widget.url).then((archive) => {
+    fetchFiles(widget.data).then((archive) => {
           // scene.clear(),
           setState(() {
             group = three.Group();
@@ -655,10 +639,6 @@ class _ThreeRender extends State<ThreeRender> {
             if (archive.item2 == "empty") {
               _dialogBuilder(context,
                   msg: "There is no data on the server for this query");
-            } else if (archive.item2 == "failed") {
-              _dialogBuilder(context,
-                  msg:
-                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later");
             }
             archive.item1.files.forEach((file) {
               print(getSqInSystem(file.name));

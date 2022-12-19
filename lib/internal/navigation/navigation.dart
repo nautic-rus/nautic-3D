@@ -2,12 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../connection/if_not_connection.dart';
+import '../../data/api/documents_services.dart';
+import '../../data/api/issues_services.dart';
 import '../../presentation/navigation/home_page_screen.dart';
 import '../../presentation/navigation/qr_reader_screen.dart';
 import '../../presentation/navigation/sel_doc_screen.dart';
 
 class Navigation extends StatefulWidget {
-  const Navigation({Key? key}) : super(key: key);
+  Navigation(
+      {Key? key,
+      required this.futureDocs,
+      required this.futureIssues,
+      required this.connectionState,
+      required this.data})
+      : super(key: key);
+
+  List<DocData> futureDocs;
+  List<IssuesData> futureIssues;
+  String connectionState;
+  List data;
 
   @override
   State<Navigation> createState() => _NavigationState();
@@ -24,12 +37,7 @@ class _NavigationState extends State<Navigation> {
   late double height;
   late double multiplier;
 
-  final _kTabPages = <Widget>[
-    CheckConnectionPage(page: Home()),
-    CheckConnectionPage(page: QrReader()),
-    CheckConnectionPage(page: SelectModel()),
-    // NoConnectionPage(page: History(docNumber: "meow"))
-  ];
+  final PageStorageBucket bucket = PageStorageBucket();
 
   void _onItemTapped(int index) {
     setState(() {
@@ -62,20 +70,44 @@ class _NavigationState extends State<Navigation> {
       // BottomNavigationBarItem(icon: Icon(Icons.history), label: "History")
     ];
 
+    final _kTabPages = <Widget>[
+      CheckConnectionPage(
+        page: Home(
+          data: widget.data,
+          futureDocs: widget.futureDocs,
+          connectionState: widget.connectionState,
+        ),
+        key: PageStorageKey('HomePage'),
+      ),
+      CheckConnectionPage(
+          page: QrReader(
+        futureDocs: widget.futureDocs,
+        connectionState: widget.connectionState,
+      )),
+      CheckConnectionPage(
+        page: SelectModel(futureIssues: widget.futureIssues),
+        key: PageStorageKey('SelectModel'),
+      ),
+      // NoConnectionPage(page: History(docNumber: "meow"))
+    ];
+
     assert(_kTabPages.length == _kBottomNavBarItems.length);
 
-    final bottomNavBar = BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      type: BottomNavigationBarType.fixed,
-      onTap: _onItemTapped,
-      items: _kBottomNavBarItems,
-      iconSize: height * 0.025,
-    );
+    Widget bottomNavBar(int selectedIndex) => BottomNavigationBar(
+          currentIndex: selectedIndex,
+          type: BottomNavigationBarType.fixed,
+          onTap: _onItemTapped,
+          items: _kBottomNavBarItems,
+          iconSize: height * 0.025,
+        );
 
     return WillPopScope(
         child: Scaffold(
           key: _scaffoldKey,
-          body: _kTabPages[_selectedIndex],
+          body: PageStorage(
+            bucket: bucket,
+            child: _kTabPages[_selectedIndex],
+          ),
           // body: IndexedStack(
           //   children: _kTabPages,
           //   index: _selectedIndex,
@@ -83,7 +115,7 @@ class _NavigationState extends State<Navigation> {
           bottomNavigationBar: SizedBox(
             height: MediaQuery.of(context).size.height * 0.065,
             width: MediaQuery.of(context).size.width,
-            child: bottomNavBar,
+            child: bottomNavBar(_selectedIndex),
           ),
         ),
         onWillPop: () async {

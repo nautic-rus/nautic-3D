@@ -194,40 +194,37 @@ class _SelectModel extends State<StatefulWidget> {
                     title: const Icon(Icons.directions_boat_outlined,
                         color: Colors.black),
                     content: Column(children: <Widget>[
-                            Container(
-                              child: Text("Выбор отдела",
-                                  style: TextStyle(
-                                      fontSize: 24, color: Colors.black)),
-                              padding: EdgeInsets.only(bottom: 20),
-                            ),
-                            GridView.builder(
-                                physics: ScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: projects.length,
-                                gridDelegate:
-                                    const SliverGridDelegateWithMaxCrossAxisExtent(
-                                        maxCrossAxisExtent: 200,
-                                        childAspectRatio: 3 / 1,
-                                        crossAxisSpacing: 20,
-                                        mainAxisSpacing: 20),
-                                itemBuilder: (BuildContext ctx, index) {
-                                  return GestureDetector(
-                                    onTap: () =>
-                                        {selectProject(projects[index])},
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius:
-                                              BorderRadius.circular(40)),
-                                      child: Text(department[index],
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: Colors.black)),
-                                    ),
-                                  );
-                                }),
-                          ]),
+                      Container(
+                        child: Text("Выбор отдела",
+                            style:
+                                TextStyle(fontSize: 24, color: Colors.black)),
+                        padding: EdgeInsets.only(bottom: 20),
+                      ),
+                      GridView.builder(
+                          physics: ScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: projects.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 200,
+                                  childAspectRatio: 3 / 1,
+                                  crossAxisSpacing: 20,
+                                  mainAxisSpacing: 20),
+                          itemBuilder: (BuildContext ctx, index) {
+                            return GestureDetector(
+                              onTap: () => {selectProject(projects[index])},
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(40)),
+                                child: Text(department[index],
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.black)),
+                              ),
+                            );
+                          }),
+                    ]),
                     isActive: _index >= 1,
                     state:
                         _index >= 2 ? StepState.complete : StepState.disabled,
@@ -236,39 +233,37 @@ class _SelectModel extends State<StatefulWidget> {
                     title: const Icon(Icons.file_copy_outlined,
                         color: Colors.black),
                     content: Column(children: <Widget>[
-                            Container(
-                              child: Text("Выбор чертежа",
-                                  style: TextStyle(
-                                      fontSize: 24, color: Colors.black)),
-                              padding: EdgeInsets.only(bottom: 20),
-                            ),
-                            GridView.builder(
-                                physics: ScrollPhysics(),
-                                shrinkWrap: true,
-                                gridDelegate:
-                                    const SliverGridDelegateWithMaxCrossAxisExtent(
-                                        maxCrossAxisExtent: 200,
-                                        childAspectRatio: 3 / 1,
-                                        crossAxisSpacing: 20,
-                                        mainAxisSpacing: 20),
-                                itemCount: groups.length,
-                                itemBuilder: (BuildContext ctx, index) {
-                                  return GestureDetector(
-                                    onTap: () => {selectGroup(groups[index])},
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius:
-                                              BorderRadius.circular(40)),
-                                      child: Text(groups[index],
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: Colors.black)),
-                                    ),
-                                  );
-                                }),
-                          ]),
+                      Container(
+                        child: Text("Выбор чертежа",
+                            style:
+                                TextStyle(fontSize: 24, color: Colors.black)),
+                        padding: EdgeInsets.only(bottom: 20),
+                      ),
+                      GridView.builder(
+                          physics: ScrollPhysics(),
+                          shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 200,
+                                  childAspectRatio: 3 / 1,
+                                  crossAxisSpacing: 20,
+                                  mainAxisSpacing: 20),
+                          itemCount: groups.length,
+                          itemBuilder: (BuildContext ctx, index) {
+                            return GestureDetector(
+                              onTap: () => {selectGroup(groups[index])},
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(40)),
+                                child: Text(groups[index],
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.black)),
+                              ),
+                            );
+                          }),
+                    ]),
                     isActive: _index >= 2,
                     state:
                         _index >= 3 ? StepState.complete : StepState.disabled,
@@ -276,50 +271,50 @@ class _SelectModel extends State<StatefulWidget> {
                   Step(
                     title: const Icon(Icons.draw_outlined, color: Colors.black),
                     content: Column(children: <Widget>[
-                            Container(
-                              child: Text("Выбор модели",
-                                  style: TextStyle(
-                                      fontSize: 24, color: Colors.black)),
-                              padding: EdgeInsets.only(bottom: 20),
-                            ),
-                            GridView.builder(
-                                physics: ScrollPhysics(),
-                                shrinkWrap: true,
-                                gridDelegate:
-                                    const SliverGridDelegateWithMaxCrossAxisExtent(
-                                        maxCrossAxisExtent: 200,
-                                        childAspectRatio: 3 / 1,
-                                        crossAxisSpacing: 20,
-                                        mainAxisSpacing: 20),
-                                itemCount: spoolsList.length,
-                                itemBuilder: (BuildContext ctx, index) {
-                                  return GestureDetector(
-                                    onTap: () => {
-                                      setState(() {
-                                        data[1] = spoolsList[_index];
-                                        var url = getUrl(data);
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ThreeRender(url: url))).then((value) => _index = _index);
-                                      })
-                                    },
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius:
-                                              BorderRadius.circular(40)),
-                                      child: Text(spoolsList[index],
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: Colors.black)),
-                                    ),
-                                  );
-                                }),
-                          ]),
+                      Container(
+                        child: Text("Выбор модели",
+                            style:
+                                TextStyle(fontSize: 24, color: Colors.black)),
+                        padding: EdgeInsets.only(bottom: 20),
+                      ),
+                      GridView.builder(
+                          physics: ScrollPhysics(),
+                          shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 200,
+                                  childAspectRatio: 3 / 1,
+                                  crossAxisSpacing: 20,
+                                  mainAxisSpacing: 20),
+                          itemCount: spoolsList.length,
+                          itemBuilder: (BuildContext ctx, index) {
+                            return GestureDetector(
+                              onTap: () => {
+                                setState(() {
+                                  data[1] = spoolsList[_index];
+                                  var url = getUrl(data);
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                          builder: (context) =>
+                                              ThreeRender(data: [])))
+                                      .then((value) => _index = _index);
+                                })
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(40)),
+                                child: Text(spoolsList[index],
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.black)),
+                              ),
+                            );
+                          }),
+                    ]),
                     isActive: _index == 3,
-                    state: _index == 4 ? StepState.complete : StepState.disabled,
+                    state:
+                        _index == 4 ? StepState.complete : StepState.disabled,
                   ),
                 ],
               ),

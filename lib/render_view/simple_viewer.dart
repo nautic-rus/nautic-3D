@@ -17,11 +17,11 @@ import '../data/api/documents_services.dart';
 import '../data/api/zipobject_services.dart';
 
 class SimpleRender extends StatefulWidget {
-  SimpleRender({Key? key, required this.url, required this.urlSpool})
+  SimpleRender({Key? key, required this.data, required this.dataSpool})
       : super(key: key);
 
-  String url;
-  String urlSpool;
+  List data;
+  List dataSpool;
 
   @override
   State<SimpleRender> createState() => _SimpleRender();
@@ -72,59 +72,42 @@ class _SimpleRender extends State<SimpleRender> {
   var appBarHeight = 50.0;
 
   var localToCameraAxesPlacement;
-  var data;
   var currentDocNumber;
   var currentSpool = "";
 
   @override
   void initState() {
     super.initState();
-    data = getData(widget.urlSpool);
-    currentSpool = data[1];
-    currentDocNumber = data[0];
+    if (widget.dataSpool.isNotEmpty) {
+      currentSpool = widget.dataSpool[1];
+      currentDocNumber = widget.dataSpool[0];
 
-    parseSpool(currentDocNumber).then((value) => {
-          if (value.item2 == "empty")
-            {
-              _dialogBuilder(context,
-                  msg: "There is no data on the server for this query"),
-            }
-          else if (value.item2 == "failed")
-            {
-              _dialogBuilder(context,
-                  msg:
-                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later"),
-            },
-          setState(() {
-            value.item1.forEach((element) {
-              spoolsList.add(element);
-            });
-          })
-        });
+      parseSpool(currentDocNumber).then((value) => {
+            setState(() async {
+              if (value.item2 == "failed") {
+                await _dialogBuilder(context,
+                    msg:
+                        "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later");
+              }
+              value.item1.forEach((element) {
+                spoolsList.add(element);
+              });
+            })
+          });
 
-    fetchDocument(currentDocNumber).then((value) => {
-          if (value.item2 == "empty")
-            {
-              _dialogBuilder(context,
-                  msg: "There is no data on the server for this query"),
-            }
-          else if (value.item2 == "failed")
-            {
-              _dialogBuilder(context,
-                  msg:
-                      "There is no connection to the deep-sea.ru server, maybe it is broken. \n\nPlease try again later"),
-            },
-          setState(() {
-            value.item1.forEach((element) {
-              futureSpool.add(element);
-            });
-          }),
-          for (int i = 0; i < futureSpool.length; i++)
-            {
-              allSpoolsList.add(futureSpool[i].spool),
-              sqList.add(futureSpool[i].sqInSystem)
-            }
-        });
+      fetchDocument(currentDocNumber).then((value) => {
+            setState(() {
+              value.item1.forEach((element) {
+                futureSpool.add(element);
+              });
+            }),
+            for (int i = 0; i < futureSpool.length; i++)
+              {
+                allSpoolsList.add(futureSpool[i].spool),
+                sqList.add(futureSpool[i].sqInSystem)
+              }
+          });
+    }
 
     // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   }
@@ -145,7 +128,6 @@ class _SimpleRender extends State<SimpleRender> {
               child: const Text('Ok',
                   style: TextStyle(fontSize: 22), textAlign: TextAlign.center),
               onPressed: () {
-                Navigator.pop(context);
                 Navigator.pop(context);
               },
             ),
@@ -305,10 +287,10 @@ class _SimpleRender extends State<SimpleRender> {
     state = false;
     pointer.x = (details.globalPosition.dx / screenSize!.width) * 2 - 1;
     pointer.y = -(details.globalPosition.dy /
-        (screenSize!.height +
-            appBarHeight +
-            MediaQuery.of(context).padding.top)) *
-        2 +
+                (screenSize!.height +
+                    appBarHeight +
+                    MediaQuery.of(context).padding.top)) *
+            2 +
         1;
 
     print(pointer.x);
@@ -488,13 +470,17 @@ class _SimpleRender extends State<SimpleRender> {
   loadObjFromZip(String name) async {
     var loader = three_jsm.OBJLoader(null);
 
-    await fetchFiles(widget.url).then((archive) => {
+    await fetchFiles(widget.data).then((archive) => {
           // scene.clear(),
           setState(() {
             group = three.Group();
             group.name = name;
             print(group.name);
             var archiveFiles = 0;
+            if (archive.item2 == "empty") {
+              _dialogBuilder(context,
+                  msg: "There is no data on the server for this query");
+            }
             archive.item1.files.forEach((file) {
               var decode = utf8.decode(file.content);
               List<String> split;
@@ -528,45 +514,51 @@ class _SimpleRender extends State<SimpleRender> {
           })
         });
 
-    fetchFiles(widget.urlSpool).then((archive) => {
-          // scene.clear(),
-          setState(() {
-            group = three.Group();
-            group.name = currentSpool;
-            print(group.name);
-            var archiveFiles = 0;
-            archive.item1.files.forEach((file) {
-              var decode = utf8.decode(file.content);
-              List<String> split;
-              List<String> formatted = List.empty(growable: true);
-              decode.split('\n').forEach((line) => {
-                    split = line.split(' '),
-                    if (split.isNotEmpty && split.elementAt(0) == 'v')
-                      {formatted.add(line)}
-                    else if (split.isNotEmpty && split.elementAt(0) == 'f')
-                      {
-                        formatted.add(List.from([
-                          'f',
-                          split.elementAt(1).replaceAll("/", "//"),
-                          split.elementAt(2).replaceAll("/", "//"),
-                          split.elementAt(3).replaceAll("/", "//")
-                        ]).join(' ')),
-                      }
-                    else if (line.trim() == "")
-                      {}
-                    else
-                      {formatted.add(line)}
-                  });
+    if (widget.dataSpool.isNotEmpty) {
+      fetchFiles(widget.dataSpool).then((archive) => {
+            // scene.clear(),
+            setState(() {
+              group = three.Group();
+              group.name = currentSpool;
+              print(group.name);
+              var archiveFiles = 0;
+              if (archive.item2 == "empty") {
+                _dialogBuilder(context,
+                    msg: "There is no data on the server for this query");
+              }
+              archive.item1.files.forEach((file) {
+                var decode = utf8.decode(file.content);
+                List<String> split;
+                List<String> formatted = List.empty(growable: true);
+                decode.split('\n').forEach((line) => {
+                      split = line.split(' '),
+                      if (split.isNotEmpty && split.elementAt(0) == 'v')
+                        {formatted.add(line)}
+                      else if (split.isNotEmpty && split.elementAt(0) == 'f')
+                        {
+                          formatted.add(List.from([
+                            'f',
+                            split.elementAt(1).replaceAll("/", "//"),
+                            split.elementAt(2).replaceAll("/", "//"),
+                            split.elementAt(3).replaceAll("/", "//")
+                          ]).join(' ')),
+                        }
+                      else if (line.trim() == "")
+                        {}
+                      else
+                        {formatted.add(line)}
+                    });
 
-              (loader.parse(formatted.join('\n')) as Future<dynamic>)
-                  .then((model) => {
-                        group.add(model),
-                        if (++archiveFiles == archive.item1.files.length)
-                          {scene.add(group), createScaleView(group)}
-                      });
-            });
-          })
-        });
+                (loader.parse(formatted.join('\n')) as Future<dynamic>)
+                    .then((model) => {
+                          group.add(model),
+                          if (++archiveFiles == archive.item1.files.length)
+                            {scene.add(group), createScaleView(group)}
+                        });
+              });
+            })
+          });
+    }
   }
 
   addToView(three.Object3D object) {

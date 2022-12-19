@@ -7,20 +7,26 @@ import 'package:nautic_viewer/render_view/simple_viewer.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../connection/if_not_connection.dart';
-import '../../data/api/zipobject_services.dart';
+import '../../data/api/documents_services.dart';
 import '../../internal/comp_data/document_info.dart';
 
 class Document extends StatefulWidget {
-  Document({Key? key, required this.url}) : super(key: key);
+  Document(
+      {Key? key,
+      required this.data,
+      required this.futureDocs,
+      required this.connectionState})
+      : super(key: key);
 
-  String url;
+  List data;
+  List<DocData> futureDocs;
+  String connectionState;
 
   @override
   State<Document> createState() => _DocumentState();
 }
 
 class _DocumentState extends State<Document> {
-  var data;
   var currentDocNumber;
   var currentSpool;
   bool isInternetAvailable = true;
@@ -31,9 +37,8 @@ class _DocumentState extends State<Document> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    data = getData(widget.url);
-    currentDocNumber = data[0];
-    currentSpool = data[1];
+    currentDocNumber = widget.data[0];
+    currentSpool = widget.data[1];
   }
 
   final RefreshController _refreshController =
@@ -61,7 +66,7 @@ class _DocumentState extends State<Document> {
   @override
   Widget build(BuildContext context) {
     brightness = SchedulerBinding.instance.window.platformBrightness;
-    return data.isEmpty
+    return widget.data.isEmpty
         ? Scaffold(
             body: Center(
                 child: LoadingAnimationWidget.threeArchedCircle(
@@ -88,7 +93,11 @@ class _DocumentState extends State<Document> {
                     Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: ScanData(url: widget.url)),
+                        child: ScanData(
+                          data: widget.data,
+                          futureDocs: widget.futureDocs,
+                          connectionState: widget.connectionState,
+                        )),
                     SizedBox(
                         height: MediaQuery.of(context).size.height * 0.07,
                         width: MediaQuery.of(context).size.width * 0.9,
@@ -97,7 +106,7 @@ class _DocumentState extends State<Document> {
                             setState(() {
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) =>
-                                      ThreeRender(url: widget.url)));
+                                      ThreeRender(data: widget.data)));
                             });
                           },
                           child: Text("Display this spool"),
@@ -112,7 +121,9 @@ class _DocumentState extends State<Document> {
                     ),
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: SelectSpool(docNumber: currentDocNumber),
+                      child: SelectSpool(
+                        docNumber: currentDocNumber
+                      ),
                       height: MediaQuery.of(context).size.height * 0.4,
                       width: MediaQuery.of(context).size.width,
                       alignment: Alignment.center,
@@ -125,12 +136,12 @@ class _DocumentState extends State<Document> {
                             setState(() {
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => SimpleRender(
-                                        url: getUrl([
-                                          "${data[0]}",
+                                        data: [
+                                          "${widget.data[0]}",
                                           "full",
-                                          "${data[2]}"
-                                        ]),
-                                        urlSpool: widget.url,
+                                          "${widget.data[2]}"
+                                        ],
+                                        dataSpool: widget.data,
                                       )));
                             });
                           },

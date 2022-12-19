@@ -11,15 +11,21 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../data/api/issues_services.dart';
 import '../../data/api/zipobject_services.dart';
 import '../../data/parse/parse_spool.dart';
+import '../../render_view/simple_viewer.dart';
 
 class SelectModel extends StatefulWidget {
-  const SelectModel({Key? key}) : super(key: key);
+  SelectModel({
+    Key? key,
+    required this.futureIssues,
+  }) : super(key: key);
+
+  List<IssuesData> futureIssues;
 
   @override
-  State<StatefulWidget> createState() => _SelectModel();
+  State<StatefulWidget> createState() => _SelectModelState();
 }
 
-class _SelectModel extends State<StatefulWidget> {
+class _SelectModelState extends State<SelectModel> {
   int _selectedIndex = 0;
   List indexes = [];
 
@@ -36,8 +42,6 @@ class _SelectModel extends State<StatefulWidget> {
   List<String> spoolsList = List<String>.empty(growable: true);
   List<String> documents = List<String>.empty(growable: true);
   List<String> departments = List<String>.empty(growable: true);
-
-  List<IssuesData> futureIssues = List<IssuesData>.empty(growable: true);
 
   String selectedProject = "";
   String selectedDepartment = "";
@@ -59,10 +63,10 @@ class _SelectModel extends State<StatefulWidget> {
       selectedProject = input;
       departments.clear();
       allDepartments.clear();
-      for (int i = 0; i < futureIssues.length; i++) {
-        if (futureIssues[i].department == "System" &&
-            futureIssues[i].project == selectedProject) {
-          allDepartments.add(futureIssues[i].department);
+      for (int i = 0; i < widget.futureIssues.length; i++) {
+        if (widget.futureIssues[i].department == "System" &&
+            widget.futureIssues[i].project == selectedProject) {
+          allDepartments.add(widget.futureIssues[i].department);
         }
       }
       allDepartments.toSet().forEach((element) {
@@ -80,11 +84,11 @@ class _SelectModel extends State<StatefulWidget> {
       selectedDepartment = input;
       documents.clear();
       allDocuments.clear();
-      for (int i = 0; i < futureIssues.length; i++) {
-        if (futureIssues[i].department == selectedDepartment &&
-            futureIssues[i].issue_type == "RKD" &&
-            futureIssues[i].project == selectedProject) {
-          allDocuments.add(futureIssues[i].doc_number);
+      for (int i = 0; i < widget.futureIssues.length; i++) {
+        if (widget.futureIssues[i].department == selectedDepartment &&
+            widget.futureIssues[i].issue_type == "RKD" &&
+            widget.futureIssues[i].project == selectedProject) {
+          allDocuments.add(widget.futureIssues[i].doc_number);
         }
       }
       allDocuments.toSet().forEach((element) {
@@ -116,24 +120,16 @@ class _SelectModel extends State<StatefulWidget> {
   void initState() {
     super.initState();
     data = getData("");
-    fetchIssues().then((value) {
-      setState(() {
-        connectionState = value.item2;
-        value.item1.forEach((element) {
-          futureIssues.add(element);
-        });
-      });
-      for (int i = 0; i < futureIssues.length; i++) {
-        if (futureIssues[i].department == "System" &&
-            futureIssues[i].issue_type == "RKD" &&
-            (futureIssues[i].project == "NR004" ||
-                futureIssues[i].project == "170701")) {
-          allProjects.add(futureIssues[i].project);
-        }
+    for (int i = 0; i < widget.futureIssues.length; i++) {
+      if (widget.futureIssues[i].department == "System" &&
+          widget.futureIssues[i].issue_type == "RKD" &&
+          (widget.futureIssues[i].project == "NR004" ||
+              widget.futureIssues[i].project == "170701")) {
+        allProjects.add(widget.futureIssues[i].project);
       }
-      allProjects.toSet().forEach((element) {
-        projects.add(element);
-      });
+    }
+    allProjects.toSet().forEach((element) {
+      projects.add(element);
     });
   }
 
@@ -353,6 +349,37 @@ class _SelectModel extends State<StatefulWidget> {
                                               style: TextStyle(fontSize: 24)),
                                           padding: EdgeInsets.only(bottom: 20),
                                         ),
+                                        // SizedBox(
+                                        //   height: MediaQuery.of(context)
+                                        //           .size
+                                        //           .height *
+                                        //       0.07,
+                                        //   width: MediaQuery.of(context)
+                                        //           .size
+                                        //           .width *
+                                        //       0.9,
+                                        //   child: ElevatedButton(
+                                        //     onPressed: () {
+                                        //       setState(() {
+                                        //         Navigator.of(context).push(
+                                        //             MaterialPageRoute(
+                                        //                 builder: (context) =>
+                                        //                     SimpleRender(
+                                        //                       data: [
+                                        //                         selectedDocument,
+                                        //                         "full",
+                                        //                         "${data[2]}"
+                                        //                       ],
+                                        //                       dataSpool: [],
+                                        //                     )));
+                                        //       });
+                                        //     },
+                                        //     child: Text("Display all spools"),
+                                        //     style: ElevatedButton.styleFrom(
+                                        //         textStyle:
+                                        //             TextStyle(fontSize: 24)),
+                                        //   ),
+                                        // ),
                                         GridView.builder(
                                             physics: ScrollPhysics(),
                                             shrinkWrap: true,
@@ -369,13 +396,12 @@ class _SelectModel extends State<StatefulWidget> {
                                                 onTap: () => {
                                                   setState(() {
                                                     data[1] = spoolsList[index];
-                                                    var url = getUrl(data);
-                                                    print(url);
                                                     Navigator.of(context)
                                                         .push(MaterialPageRoute(
                                                             builder: (context) =>
                                                                 ThreeRender(
-                                                                    url: url)))
+                                                                    data:
+                                                                        data)))
                                                         .then((value) =>
                                                             _selectedIndex =
                                                                 _selectedIndex);

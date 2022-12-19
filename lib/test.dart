@@ -1,74 +1,131 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void main() => runApp(App());
+void main() => runApp(MyApp());
 
-class App extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
-    );
-
     return MaterialApp(
-      title: 'Introduction screen',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: PullRefreshPage(),
+      home: HomePage(),
     );
   }
 }
 
-class PullRefreshPage extends StatefulWidget {
-  const PullRefreshPage();
-
-  @override
-  State<PullRefreshPage> createState() => _PullRefreshPageState();
-}
-
-class _PullRefreshPageState extends State<PullRefreshPage> {
-  List<String> numbersList = NumberGenerator().numbers;
+class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _pullRefresh,
-        child: ListView.builder(
-          itemCount: numbersList.length,
-          itemBuilder: (context, index) {
-            return Text(
-              "Your last scan data",
-              style: TextStyle(fontSize: 30),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pullRefresh() async {
-    List<String> freshNumbers = await NumberGenerator().slowNumbers();
-    setState(() {
-      numbersList = freshNumbers;
-    });
-    // why use freshNumbers var? https://stackoverflow.com/a/52992836/2301224
+        appBar: EmptyAppBar(),
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverPersistentHeader(
+              delegate: MySliverAppBar(),
+              floating: false,
+              pinned: true,
+            ),
+            sliverBody()
+          ],
+        ));
   }
 }
 
-class NumberGenerator {
-  Future<List<String>> slowNumbers() async {
-    return Future.delayed(
-      const Duration(milliseconds: 1000),
-      () => numbers,
+class MySliverAppBar extends SliverPersistentHeaderDelegate {
+
+  final double expandedHeight = 180;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+
+    return Stack(
+      clipBehavior: Clip.none, fit: StackFit.expand,
+      children: [
+        Image.network(
+          "https://images.pexels.com/photos/396547/pexels-photo-396547.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+          fit: BoxFit.cover,
+        ),
+        Opacity(
+          opacity: shrinkOffset / expandedHeight,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        Center(
+          child: Opacity(
+            opacity: shrinkOffset / expandedHeight,
+            child: Text(
+              "MySliverAppBar",
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.w700,
+                fontSize: 23,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: expandedHeight / 2 - shrinkOffset,
+          left: MediaQuery.of(context).size.width / 4,
+          child: Opacity(
+            opacity: (1 - shrinkOffset / expandedHeight),
+            child: Card(
+              elevation: 10,
+              child: SizedBox(
+                height: expandedHeight,
+                width: MediaQuery.of(context).size.width / 2,
+                child: FlutterLogo(),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  List<String> get numbers => List.generate(5, (index) => number);
+  @override
+  double get maxExtent => expandedHeight;
 
-  String get number => Random().nextInt(99999).toString();
+  @override
+  double get minExtent => kToolbarHeight;
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) => true;
+}
+
+Widget sliverBody() {
+  return SliverList(
+    delegate: SliverChildListDelegate([
+      ListTile(title: Text("1")),
+      ListTile(title: Text("2")),
+      ListTile(title: Text("3")),
+      ListTile(title: Text("4")),
+      ListTile(title: Text("5")),
+      ListTile(title: Text("6")),
+      ListTile(title: Text("7")),
+      ListTile(title: Text("8")),
+      ListTile(title: Text("9")),
+      ListTile(title: Text("10")),
+      ListTile(title: Text("11")),
+      ListTile(title: Text("12")),
+      ListTile(title: Text("13")),
+      ListTile(title: Text("14")),
+      ListTile(title: Text("15")),
+      ListTile(title: Text("16")),
+      ListTile(title: Text("17")),
+    ]),
+  );
+}
+
+class  EmptyAppBar  extends StatelessWidget implements PreferredSizeWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+  @override
+  Size get preferredSize => Size(0.0,0.0);
 }
