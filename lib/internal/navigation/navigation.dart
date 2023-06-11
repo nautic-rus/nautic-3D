@@ -35,6 +35,8 @@ class _NavigationState extends State<Navigation> {
   late double height;
   late double multiplier;
 
+  double bottomBarHeight = 50.0;
+
   final PageStorageBucket bucket = PageStorageBucket();
 
   void _onItemTapped(int index) {
@@ -86,7 +88,7 @@ class _NavigationState extends State<Navigation> {
           type: BottomNavigationBarType.fixed,
           onTap: _onItemTapped,
           items: _kBottomNavBarItems,
-          iconSize: height * 0.04,
+          iconSize: bottomBarHeight * 0.7,
           showSelectedLabels: false,
           showUnselectedLabels: false,
           selectedFontSize: 0,
@@ -101,7 +103,7 @@ class _NavigationState extends State<Navigation> {
             child: _kTabPages[_selectedIndex],
           ),
           bottomNavigationBar: SizedBox(
-            height: height * 0.065,
+            height: bottomBarHeight,
             width: width,
             child: bottomNavBar(_selectedIndex),
           ),

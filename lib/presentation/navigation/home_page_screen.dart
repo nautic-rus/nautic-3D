@@ -110,16 +110,15 @@ class _HomeState extends State<Home> {
         preferredSize: Size.fromHeight(appBarHeight),
         child: AppBar(
           title: Container(
-              width: width * 0.25,
+              width: 100,
               height: appBarHeight * 0.9,
-              alignment: Alignment.center,
               child: brightness == Brightness.dark
                   ? SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")
                   : SvgPicture.asset("assets/nautic_blue.svg")),
           actions: <Widget>[
             Container(
               width: appBarHeight,
-              height: appBarHeight * 0.9,
+              height: appBarHeight,
               child: IconButton(
                 onPressed: () {
                   showSearch(
@@ -132,7 +131,6 @@ class _HomeState extends State<Home> {
                 },
                 icon: Icon(
                   Icons.search,
-                  size: height * 0.04,
                 ),
               ),
             )

@@ -50,6 +50,8 @@ class _SelectModelState extends State<SelectModel> {
   late double width;
   late double height;
 
+  double appBarHeight = 50.0;
+
   String connectionState = "connect";
   String loadSpools = "connect";
 
@@ -164,8 +166,8 @@ class _SelectModelState extends State<SelectModel> {
         child: Scaffold(
             appBar: AppBar(
               title: Container(
-                  width: width * 0.25,
-                  height: height * 0.05,
+                  width: 100,
+                  height: appBarHeight * 0.9,
                   child: brightness == Brightness.dark
                       ? SvgPicture.asset("assets/NAUTIC_RUS_White_logo.svg")
                       : SvgPicture.asset("assets/nautic_blue.svg")),
@@ -190,7 +192,7 @@ class _SelectModelState extends State<SelectModel> {
                         onStepCancel: cancel,
                         steps: <Step>[
                           Step(
-                            title: const Icon(Icons.directions_boat_outlined),
+                            title: Icon(Icons.directions_boat_outlined, size: height * 0.03),
                             content: connectionState == "connect"
                                 ? projects.isEmpty
                                     ? isLoading()
@@ -259,7 +261,7 @@ class _SelectModelState extends State<SelectModel> {
                                 : StepState.disabled,
                           ),
                           Step(
-                            title: const Icon(Icons.workspaces_outline),
+                            title: Icon(Icons.workspaces_outline, size: height * 0.03),
                             content: Column(children: <Widget>[
                               Container(
                                 child: Text("DEPARTMENTS",
@@ -301,7 +303,7 @@ class _SelectModelState extends State<SelectModel> {
                                 : StepState.disabled,
                           ),
                           Step(
-                            title: const Icon(Icons.file_copy_outlined),
+                            title: Icon(Icons.file_copy_outlined, size: height * 0.03),
                             content: Column(children: <Widget>[
                               Container(
                                 child: Text("DOCUMENTS",
@@ -342,7 +344,7 @@ class _SelectModelState extends State<SelectModel> {
                                 : StepState.disabled,
                           ),
                           Step(
-                            title: const Icon(Icons.draw_outlined),
+                            title: Icon(Icons.draw_outlined, size: height * 0.03),
                             content: loadSpools == "connect"
                                 ? spoolsList.isEmpty
                                     ? isLoading()
