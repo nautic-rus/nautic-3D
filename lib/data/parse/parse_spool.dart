@@ -15,10 +15,9 @@ parseSpool(String docNumber) async {
         futureSpool.add(element);
       })
     });
-  } on Exception {
-    print(Exception());
+  } on Exception catch (_) {
+    print(_);
   }
-
 
   print(connection);
   for (int i = 0; i < futureSpool.length; i++) {

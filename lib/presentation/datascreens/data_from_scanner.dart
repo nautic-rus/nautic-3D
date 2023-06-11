@@ -92,20 +92,20 @@ class _DocumentState extends State<Document> {
       appBar: AppBar(
         title: Text("Document"),
       ),
-      body: widget.data.isEmpty || connectionState == "notLoad"
-          ? Center(
-              child: LoadingAnimationWidget.threeArchedCircle(
-                  color: brightness == Brightness.dark
-                      ? Color(0xFF67CAD7)
-                      : Color(0xFF2C298A),
-                  size: MediaQuery.of(context).size.width * 0.2))
-          : SmartRefresher(
+      body: SmartRefresher(
               enablePullDown: true,
               header: WaterDropMaterialHeader(),
               onRefresh: _onRefresh,
               onLoading: _onLoading,
               controller: _refreshController,
-              child: connectionState == "failed"
+              child: widget.data.isEmpty || connectionState == "notLoad"
+                  ? Center(
+                  child: LoadingAnimationWidget.threeArchedCircle(
+                      color: brightness == Brightness.dark
+                          ? Color(0xFF67CAD7)
+                          : Color(0xFF2C298A),
+                      size: MediaQuery.of(context).size.width * 0.2)) :
+              connectionState == "failed"
                   ? Positioned(
                       child: CheckConnectionPage(
                       page: Container(),

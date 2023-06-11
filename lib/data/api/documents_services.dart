@@ -24,6 +24,8 @@ Future<Tuple2<List<DocData>, String>> fetchDocument(String docNumber) async {
     if (data.isEmpty) connectionState = "empty";
   } on TimeoutException {
     print("connection timeout");
+  } on Exception catch (_) {
+    print(_);
   }
   res = Tuple2(data, connectionState);
 

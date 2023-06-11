@@ -24,6 +24,8 @@ Future<Tuple2<Archive, String>> fetchFiles(List data) async {
     }
   } on TimeoutException {
     print("connection timeout");
+  } on Exception catch (_) {
+    print(_);
   }
   answer = Tuple2(archive, connectionState);
   return answer;
