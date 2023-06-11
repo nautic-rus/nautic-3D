@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../../data/api/documents_services.dart';
+import '../datascreens/data_from_scanner.dart';
+
 class CustomSearchDelegate extends SearchDelegate {
+  CustomSearchDelegate(
+      {Key? key,
+        required this.data,
+        required this.futureDocs,
+        required this.connectionState});
+
+  List data;
+  List<DocData> futureDocs;
+  String connectionState;
+
   // Demo list to show querying
   List<String> searchTerms = [
-    "Apple",
+    "210101-819-0001",
     "Banana",
     "Mango",
     "Pear",
@@ -52,8 +65,18 @@ class CustomSearchDelegate extends SearchDelegate {
       itemBuilder: (context, index) {
         var result = matchQuery[index];
         return ListTile(
-          title: Text(result),
-        );
+            title: Text(result),
+            onTap: () {
+              data[0] = result;
+              data[1] = "001";
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                  builder: (context) => Document(
+                    data: data,
+                    futureDocs: futureDocs,
+                    connectionState: connectionState,
+                  )));
+            });
       },
     );
   }
@@ -73,8 +96,18 @@ class CustomSearchDelegate extends SearchDelegate {
       itemBuilder: (context, index) {
         var result = matchQuery[index];
         return ListTile(
-          title: Text(result),
-        );
+            title: Text(result),
+            onTap: () {
+              data[0] = result;
+              data[1] = "001";
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                  builder: (context) => Document(
+                    data: data,
+                    futureDocs: futureDocs,
+                    connectionState: connectionState,
+                  )));
+            });
       },
     );
   }

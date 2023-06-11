@@ -100,7 +100,12 @@ class _HomeState extends State<Home> {
               child: IconButton(
                 onPressed: () {
                   showSearch(
-                      context: context, delegate: CustomSearchDelegate());
+                      context: context,
+                      delegate: CustomSearchDelegate(
+                        data: data,
+                        futureDocs: widget.futureDocs,
+                        connectionState: widget.connectionState,
+                      ));
                 },
                 icon: Icon(
                   Icons.search,
@@ -130,7 +135,7 @@ class _HomeState extends State<Home> {
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                            AutoSizeText("Last scan information",
+                            AutoSizeText("Last view information",
                                 style: TextStyle(fontSize: 30),
                                 maxLines: 1,
                                 textAlign: TextAlign.center),
