@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/api/documents_services.dart';
+import '../../data/api/issues_services.dart';
 import '../datascreens/data_from_scanner.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
@@ -8,26 +9,14 @@ class CustomSearchDelegate extends SearchDelegate {
       {Key? key,
         required this.data,
         required this.futureDocs,
-        required this.connectionState});
+        required this.connectionState,
+        required this.documents});
 
   List data;
   List<DocData> futureDocs;
   String connectionState;
+  List<String> documents;
 
-  // Demo list to show querying
-  List<String> searchTerms = [
-    "210101-819-0001",
-    "Banana",
-    "Mango",
-    "Pear",
-    "Watermelons",
-    "Blueberries",
-    "Pineapples",
-    "Strawberries"
-  ];
-
-  // first overwrite to
-  // clear the search text
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -55,7 +44,7 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget buildResults(BuildContext context) {
     List<String> matchQuery = [];
-    for (var fruit in searchTerms) {
+    for (var fruit in documents) {
       if (fruit.toLowerCase().contains(query.toLowerCase())) {
         matchQuery.add(fruit);
       }
@@ -86,7 +75,7 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     List<String> matchQuery = [];
-    for (var fruit in searchTerms) {
+    for (var fruit in documents) {
       if (fruit.toLowerCase().contains(query.toLowerCase())) {
         matchQuery.add(fruit);
       }

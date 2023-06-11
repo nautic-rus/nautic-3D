@@ -69,9 +69,9 @@ class _NavigationState extends State<Navigation> {
 
     final _kTabPages = <Widget>[
       Home(
-        futureDocs: widget.futureDocs,
-        connectionState: widget.connectionState,
-      ),
+          futureDocs: widget.futureDocs,
+          connectionState: widget.connectionState,
+          futureIssues: widget.futureIssues),
       QrReader(
         futureDocs: widget.futureDocs,
         connectionState: widget.connectionState,

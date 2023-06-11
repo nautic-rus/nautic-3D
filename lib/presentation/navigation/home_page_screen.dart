@@ -7,6 +7,7 @@ import 'package:nautic_viewer/render_view/main_viewer.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../data/api/documents_services.dart';
+import '../../data/api/issues_services.dart';
 import '../../data/api/zipobject_services.dart';
 import '../../internal/comp_data/document_info.dart';
 import '../../internal/localfiles/local_files.dart';
@@ -14,11 +15,16 @@ import '../appbar/custom_search.dart';
 import '../datascreens/data_from_scanner.dart';
 
 class Home extends StatefulWidget {
-  Home({Key? key, required this.futureDocs, required this.connectionState})
-      : super(key: key);
+  Home({
+    Key? key,
+    required this.futureDocs,
+    required this.connectionState,
+    required this.futureIssues,
+  }) : super(key: key);
 
   List<DocData> futureDocs;
   String connectionState;
+  List<IssuesData> futureIssues;
 
   @override
   State<Home> createState() => _HomeState();
@@ -35,6 +41,9 @@ class _HomeState extends State<Home> {
   late double multiplier;
   late List data = [];
 
+  List<String> allDocuments = List<String>.empty(growable: true);
+  List<String> documents = List<String>.empty(growable: true);
+
   double appBarHeight = 50.0;
 
   var brightness;
@@ -44,6 +53,20 @@ class _HomeState extends State<Home> {
     // TODO: implement initState
     super.initState();
     _getUrl();
+
+    _parseDocuments();
+  }
+
+  _parseDocuments() {
+    for (int i = 0; i < widget.futureIssues.length; i++) {
+      allDocuments.add(widget.futureIssues[i].doc_number);
+    }
+
+    allDocuments.toSet().forEach((element) {
+      documents.add(element);
+    });
+
+    documents.sort();
   }
 
   _getUrl() async {
@@ -102,10 +125,10 @@ class _HomeState extends State<Home> {
                   showSearch(
                       context: context,
                       delegate: CustomSearchDelegate(
-                        data: data,
-                        futureDocs: widget.futureDocs,
-                        connectionState: widget.connectionState,
-                      ));
+                          data: data,
+                          futureDocs: widget.futureDocs,
+                          connectionState: widget.connectionState,
+                          documents: documents));
                 },
                 icon: Icon(
                   Icons.search,
