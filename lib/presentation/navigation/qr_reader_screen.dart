@@ -103,7 +103,8 @@ class _QrReaderState extends State<QrReader> {
                 builder: (context, snapshot) {
                   if (snapshot.data != null) {
                     return Icon(
-                      snapshot.data! ? Icons.flash_on : Icons.flash_off,
+                      snapshot.data! ?
+                      Icons.flash_on : Icons.flash_off,
                       color: Colors.white,
                     );
                   } else {
@@ -134,7 +135,8 @@ class _QrReaderState extends State<QrReader> {
     );
   }
 
-  Widget buildQrView(BuildContext context) {
+  Widget buildQrView(BuildContext
+  context) {
     return QRView(
       key: qrKey,
       onQRViewCreated: _onQRViewCreated,

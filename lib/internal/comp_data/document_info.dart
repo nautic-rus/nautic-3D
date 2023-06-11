@@ -7,8 +7,7 @@ import '../../data/api/documents_services.dart';
 import '../../data/api/zipobject_services.dart';
 import '../../data/parse/parse_doc.dart';
 
-class ScanData extends StatefulWidget {
-  ScanData({Key? key, required this.futureDocs, required this.data, required this.connectionState})
+class ScanData extends StatefulWidget {ScanData({Key? key, required this.futureDocs, required this.data, required this.connectionState})
       : super(key: key);
 
   List<DocData> futureDocs;
@@ -64,8 +63,6 @@ class _ScanDataState extends State<ScanData> {
             ? systemDescr != null
                 ? Column(
                     children: <Widget>[
-                      // Text("Name: $currentDocNumber",
-                      //     style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
                       AutoSizeText("Name:\n$systemDescr",
                           style: TextStyle(fontSize: 22),
                           maxLines: 3,
@@ -97,30 +94,30 @@ class _ScanDataState extends State<ScanData> {
                     children: <Widget>[
                       AutoSizeText(
                           "There is no data on the server for this query",
-                          style: TextStyle(fontSize: 22),
+                          style: TextStyle(fontSize: 22, color: Colors.redAccent),
                           maxLines: 3,
                           textAlign: TextAlign.center),
                       SizedBox(
                         height: height * 0.01,
                       ),
-                      AutoSizeText("SFI-drawing no.:\n$currentDocNumber",
-                          style: TextStyle(fontSize: 22),
-                          maxLines: 2,
-                          textAlign: TextAlign.center),
-                      SizedBox(
-                        height: height * 0.01,
-                      ),
-                      AutoSizeText("Spool: $currentSpool",
-                          style: TextStyle(fontSize: 22),
-                          maxLines: 1,
-                          textAlign: TextAlign.center),
+                      // AutoSizeText("SFI-drawing no.:\n$currentDocNumber",
+                      //     style: TextStyle(fontSize: 22),
+                      //     maxLines: 2,
+                      //     textAlign: TextAlign.center),
+                      // SizedBox(
+                      //   height: height * 0.01,
+                      // ),
+                      // AutoSizeText("Spool: $currentSpool",
+                      //     style: TextStyle(fontSize: 22),
+                      //     maxLines: 1,
+                      //     textAlign: TextAlign.center),
                     ],
                   )
                 : Column(
                     children: <Widget>[
                       AutoSizeText(
                           "No connection to the server, maybe it is broken",
-                          style: TextStyle(fontSize: 22, color: Colors.red),
+                          style: TextStyle(fontSize: 22, color: Colors.redAccent),
                           maxLines: 3,
                           textAlign: TextAlign.center),
                       SizedBox(

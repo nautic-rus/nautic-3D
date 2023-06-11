@@ -30,8 +30,7 @@ Future<Tuple2<Archive, String>> fetchFiles(List data) async {
 }
 
 getData(String url) {
-  List data = ['', '', '0'];
-  RegExp exp = RegExp('(?<=\\=)[^&]+');
+  List data = ['', '', '0'];  RegExp exp = RegExp('(?<=\\=)[^&]+');
   Iterable<RegExpMatch> matches = exp.allMatches(url);
   int i = 0;
   for (final m in matches) {
@@ -52,10 +51,14 @@ validateUrl(String url) {
 }
 
 validateData(List data) {
-  if (data[0] == "" || data[1] == "") {
-    return false;
+  if (data.isNotEmpty) {
+    if (data[0] == "" || data[1] == "") {
+      return false;
+    } else {
+      return true;
+    }
   } else {
-    return true;
+    return false;
   }
 }
 

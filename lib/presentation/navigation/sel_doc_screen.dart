@@ -51,6 +51,7 @@ class _SelectModelState extends State<SelectModel> {
   late double height;
 
   String connectionState = "connect";
+  String loadSpools = "connect";
 
   var brightness;
 
@@ -106,7 +107,7 @@ class _SelectModelState extends State<SelectModel> {
       spoolsList.clear();
       parseSpool(selectedDocument).then((value) => {
             setState(() {
-              connectionState = value.item2;
+              loadSpools = value.item2;
               value.item1.forEach((element) {
                 spoolsList.add(element);
               });
@@ -236,8 +237,10 @@ class _SelectModelState extends State<SelectModel> {
                                 : connectionState == "empty"
                                     ? const Center(
                                         child: AutoSizeText(
-                                            "There is no data on the server for this query",
-                                            style: TextStyle(fontSize: 22),
+                                            "There is no data on the server, something wrong",
+                                            style: TextStyle(
+                                                fontSize: 22,
+                                                color: Colors.redAccent),
                                             maxLines: 3,
                                             textAlign: TextAlign.center),
                                       )
@@ -246,7 +249,7 @@ class _SelectModelState extends State<SelectModel> {
                                             "No connection to the server, maybe it is broken",
                                             style: TextStyle(
                                                 fontSize: 22,
-                                                color: Colors.red),
+                                                color: Colors.redAccent),
                                             maxLines: 3,
                                             textAlign: TextAlign.center),
                                       ),
@@ -340,7 +343,7 @@ class _SelectModelState extends State<SelectModel> {
                           ),
                           Step(
                             title: const Icon(Icons.draw_outlined),
-                            content: connectionState == "connect"
+                            content: loadSpools == "connect"
                                 ? spoolsList.isEmpty
                                     ? isLoading()
                                     : Column(children: <Widget>[
@@ -425,10 +428,10 @@ class _SelectModelState extends State<SelectModel> {
                                               );
                                             }),
                                       ])
-                                : connectionState == "empty"
+                                : loadSpools == "empty"
                                     ? const Center(
                                         child: AutoSizeText(
-                                            "There is no data on the server for this query",
+                                            "There is no data on the server for this document",
                                             style: TextStyle(fontSize: 22),
                                             maxLines: 3,
                                             textAlign: TextAlign.center),
@@ -438,7 +441,7 @@ class _SelectModelState extends State<SelectModel> {
                                             "No connection to the server, maybe it is broken",
                                             style: TextStyle(
                                                 fontSize: 22,
-                                                color: Colors.red),
+                                                color: Colors.redAccent),
                                             maxLines: 3,
                                             textAlign: TextAlign.center),
                                       ),
@@ -463,6 +466,7 @@ class _SelectModelState extends State<SelectModel> {
                     onPressed: () => setState(() {
                           _selectedIndex--;
                           connectionState = "connect";
+                          loadSpools = "connect";
                         }))
                 : null),
         onWillPop: () async {

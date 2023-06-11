@@ -39,17 +39,31 @@ class _DocumentState extends State<Document> {
     super.initState();
     currentDocNumber = widget.data[0];
     currentSpool = widget.data[1];
+    _setFetchDocument();
+  }
+
+  _setFetchDocument() async {
+    await fetchDocument(currentDocNumber).then((value) => {
+      setState(() {
+        widget.connectionState = value.item2;
+        value.item1.forEach((element) {
+          widget.futureDocs.add(element);
+        });
+      })
+    });
   }
 
   final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+      RefreshController(
+          initialRefresh: false);
 
   void _onRefresh() async {
     // monitor network fetch
 
     print("refresh");
     setState(() {});
-    await Future.delayed(Duration(milliseconds: 1000));
+    await Future.delayed(
+        Duration(milliseconds: 1000));
     // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
   }
@@ -57,7 +71,8 @@ class _DocumentState extends State<Document> {
   void _onLoading() async {
     // monitor network fetch
     setState(() {});
-    await Future.delayed(Duration(milliseconds: 1000));
+    await Future.delayed(
+        Duration(milliseconds: 1000));
     print("loading");
     if (mounted) setState(() {});
     _refreshController.loadComplete();
@@ -85,8 +100,7 @@ class _DocumentState extends State<Document> {
               onRefresh: _onRefresh,
               onLoading: _onLoading,
               controller: _refreshController,
-              child: CheckConnectionPage(
-                page: Column(
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
@@ -104,7 +118,8 @@ class _DocumentState extends State<Document> {
                         child: ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              Navigator.of(context).push(MaterialPageRoute(
+                              Navigator.of(context).push
+                                (MaterialPageRoute(
                                   builder: (context) =>
                                       ThreeRender(data: widget.data)));
                             });
@@ -152,6 +167,6 @@ class _DocumentState extends State<Document> {
                   ],
                 ),
               ),
-            ));
+            );
   }
 }

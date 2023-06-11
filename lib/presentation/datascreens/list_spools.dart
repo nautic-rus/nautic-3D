@@ -37,7 +37,8 @@ class _SelectSpool extends State<SelectSpool> {
     super.initState();
     data = getData("");
     data[0] = widget.docNumber;
-    parseSpool(widget.docNumber).then((value) => {
+    parseSpool(widget.docNumber).then(
+            (value) => {
           setState(() {
             connectionState = value.item2;
             value.item1.forEach((element) {
@@ -71,7 +72,8 @@ class _SelectSpool extends State<SelectSpool> {
                             _index = index;
                             data[1] = spoolsList[_index];
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => ThreeRender(data: data)));
+                                builder: (context) =>
+                                    ThreeRender(data: data)));
                           })
                         },
                         child: Container(
@@ -91,14 +93,14 @@ class _SelectSpool extends State<SelectSpool> {
             ? const Center(
                 child: AutoSizeText(
                     "There is no data on the server for this query",
-                    style: TextStyle(fontSize: 22, color: Colors.red),
+                    style: TextStyle(fontSize: 22, color: Colors.redAccent),
                     maxLines: 3,
                     textAlign: TextAlign.center),
               )
             : Center(
                 child: AutoSizeText(
                     "No connection to the server, maybe it is broken",
-                    style: TextStyle(fontSize: 22, color: Colors.red),
+                    style: TextStyle(fontSize: 22, color: Colors.redAccent),
                     maxLines: 3,
                     textAlign: TextAlign.center),
               );

@@ -7,7 +7,8 @@ final usualTheme = ThemeData(
     primaryColorLight: Colors.purple[300],
     primaryColorDark: Colors.purple[800],
     // также указываем accentColor
-    accentColor: Colors.teal,
+    // accentColor: Colors.teal,
+    secondaryHeaderColor: Colors.teal,
     // настройка Theme для AppBar
     appBarTheme: AppBarTheme(
       shadowColor: Colors.grey.withOpacity(0.8),

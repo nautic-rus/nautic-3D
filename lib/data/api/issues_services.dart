@@ -42,7 +42,8 @@ class IssuesData {
       required this.issue_type,
       required this.doc_number});
 
-  factory IssuesData.fromJson(Map<String, dynamic> json) {
+  factory IssuesData.fromJson(
+      Map<String, dynamic> json) {
     return IssuesData(
       project: json['project'],
       department: json['department'],

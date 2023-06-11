@@ -7,14 +7,20 @@ parseSpool(String docNumber) async {
   List<String> spoolsList = List<String>.empty(growable: true);
 
   String connection = "failed";
-  await fetchDocument(docNumber).then((value) => {
-        connection = value.item2,
-        value.item1.forEach((element) {
-          print(element);
-          futureSpool.add(element);
-        })
-      });
+  try {
+    await fetchDocument(docNumber).then((value) => {
+      connection = value.item2,
+      value.item1.forEach((element) {
+        print(element);
+        futureSpool.add(element);
+      })
+    });
+  } on Exception {
+    print(Exception());
+  }
 
+
+  print(connection);
   for (int i = 0; i < futureSpool.length; i++) {
     spoolsList.add(futureSpool[i].spool);
   }

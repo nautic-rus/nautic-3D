@@ -143,7 +143,8 @@ class _ThreeRender extends State<ThreeRender> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(appBarHeight),
+          preferredSize:
+          Size.fromHeight(appBarHeight),
           child: AppBar(
             title: Text("3D viewer"),
           ),
@@ -153,11 +154,13 @@ class _ThreeRender extends State<ThreeRender> {
           height: height,
           child: state
               ? Builder(
-                  builder: (BuildContext context) {
+                  builder:
+                      (BuildContext context) {
                     initSize(context);
                     return GestureDetector(
                       onDoubleTap: () {},
-                      onDoubleTapDown: (details) => onPointer(details),
+                      onDoubleTapDown:
+                          (details) => onPointer(details),
                       child: Container(
                         child: _build(context),
                       ),
@@ -396,7 +399,8 @@ class _ThreeRender extends State<ThreeRender> {
   nextSpool() {
     setState(() {
       state = false;
-      currentSpoolIndex = checkNextSpool(++currentSpoolIndex);
+      currentSpoolIndex =
+          checkNextSpool(++currentSpoolIndex);
       print(currentSpoolIndex);
       widget.data[1] = spoolsList[currentSpoolIndex];
       if (currentSpool != widget.data[1]) {
@@ -414,7 +418,8 @@ class _ThreeRender extends State<ThreeRender> {
   previousSpool() {
     setState(() {
       state = false;
-      currentSpoolIndex = checkPreviousSpool(--currentSpoolIndex);
+      currentSpoolIndex =
+          checkPreviousSpool(--currentSpoolIndex);
       print(currentSpoolIndex);
       widget.data[1] = spoolsList[currentSpoolIndex];
       if (currentSpool != widget.data[1]) {
@@ -432,9 +437,11 @@ class _ThreeRender extends State<ThreeRender> {
   addNextSpool() {
     setState(() {
       state = false;
-      nextSpoolIndex = checkNextSpool(++nextSpoolIndex);
+      nextSpoolIndex =
+          checkNextSpool(++nextSpoolIndex);
       print(nextSpoolIndex);
-      widget.data[1] = spoolsList[nextSpoolIndex];
+      widget.data[1] =
+      spoolsList[nextSpoolIndex];
       if (addingSpool != widget.data[1]) {
         addingSpool = widget.data[1];
         addObjScene(addingSpool);
@@ -447,9 +454,12 @@ class _ThreeRender extends State<ThreeRender> {
   addPreviousSpool() {
     setState(() {
       state = false;
-      previousSpoolIndex = checkPreviousSpool(--previousSpoolIndex);
+      previousSpoolIndex =
+          checkPreviousSpool(
+              --previousSpoolIndex);
       print(previousSpoolIndex);
-      widget.data[1] = spoolsList[previousSpoolIndex];
+      widget.data[1] =
+      spoolsList[previousSpoolIndex];
       if (addingSpool != widget.data[1]) {
         addingSpool = widget.data[1];
         addObjScene(addingSpool);

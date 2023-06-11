@@ -13,14 +13,12 @@ class Navigation extends StatefulWidget {
       {Key? key,
       required this.futureDocs,
       required this.futureIssues,
-      required this.connectionState,
-      required this.data})
+      required this.connectionState})
       : super(key: key);
 
   List<DocData> futureDocs;
   List<IssuesData> futureIssues;
   String connectionState;
-  List data;
 
   @override
   State<Navigation> createState() => _NavigationState();
@@ -51,10 +49,10 @@ class _NavigationState extends State<Navigation> {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
 
-    if (width > height) {
-      width = height;
-      height = MediaQuery.of(context).size.width;
-    }
+    // if (width > height) {
+    //   width = height;
+    //   height = MediaQuery.of(context).size.width;
+    // }
 
     multiplier = 1;
 
@@ -67,28 +65,18 @@ class _NavigationState extends State<Navigation> {
       BottomNavigationBarItem(
           icon: Icon(Icons.qr_code_scanner), label: "QR scanner"),
       BottomNavigationBarItem(icon: Icon(Icons.file_copy), label: "Catalog"),
-      // BottomNavigationBarItem(icon: Icon(Icons.history), label: "History")
     ];
 
     final _kTabPages = <Widget>[
-      CheckConnectionPage(
-        page: Home(
-          data: widget.data,
-          futureDocs: widget.futureDocs,
-          connectionState: widget.connectionState,
-        ),
-        key: PageStorageKey('HomePage'),
-      ),
-      CheckConnectionPage(
-          page: QrReader(
+      Home(
         futureDocs: widget.futureDocs,
         connectionState: widget.connectionState,
-      )),
-      CheckConnectionPage(
-        page: SelectModel(futureIssues: widget.futureIssues),
-        key: PageStorageKey('SelectModel'),
       ),
-      // NoConnectionPage(page: History(docNumber: "meow"))
+      QrReader(
+        futureDocs: widget.futureDocs,
+        connectionState: widget.connectionState,
+      ),
+      SelectModel(futureIssues: widget.futureIssues)
     ];
 
     assert(_kTabPages.length == _kBottomNavBarItems.length);
@@ -108,13 +96,9 @@ class _NavigationState extends State<Navigation> {
             bucket: bucket,
             child: _kTabPages[_selectedIndex],
           ),
-          // body: IndexedStack(
-          //   children: _kTabPages,
-          //   index: _selectedIndex,
-          // ),
           bottomNavigationBar: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.065,
-            width: MediaQuery.of(context).size.width,
+            height: height * 0.065,
+            width: width,
             child: bottomNavBar(_selectedIndex),
           ),
         ),

@@ -27,7 +27,6 @@ class _SplashScreenState extends State<SplashScreen> {
   late double width;
   late double height;
 
-  late List data;
   late String currentDocNumber;
 
   Timer? timer;
@@ -35,8 +34,6 @@ class _SplashScreenState extends State<SplashScreen> {
   var brightness;
 
   String connectionState = "connect";
-
-  String url = "";
 
   late Future<dynamic> urlFuture = getLastScanUrl();
 
@@ -47,34 +44,12 @@ class _SplashScreenState extends State<SplashScreen> {
     isInternetConnected().then((value) => setState(() {
           connectionState = value;
           print(connectionState);
-          value == "connect" ? _loadingDataConnect() : _loadingDataNoConnect();
+          value == "connect" ? _loadingDataConnect() : _goToNavigation(context);
         }));
 
     Future.delayed(const Duration(seconds: 30), () {
-      _loadingDataNoConnect();
+      _goToNavigation(context);
     });
-  }
-
-  _setData() async {
-    await urlFuture.then((value) => setState(() {
-          url = value;
-        }));
-
-    print(url);
-    data = getData(url);
-    currentDocNumber = data[0];
-  }
-
-  _setFetchDocument() async {
-    await fetchDocument(currentDocNumber).then((value) => {
-          setState(() {
-            connectionState = value.item2;
-            value.item1.forEach((element) {
-              futureDocs.add(element);
-            });
-            print(connectionState);
-          })
-        });
   }
 
   _setFetchIssues() async {
@@ -90,14 +65,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   _loadingDataConnect() async {
-    await _setData();
-    await _setFetchDocument();
+    // await _setFetchDocument();
     await _setFetchIssues();
-    await _goToNavigation(context);
-  }
-
-  _loadingDataNoConnect() async {
-    await _setData();
     await _goToNavigation(context);
   }
 
@@ -108,8 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
             builder: (context) => Navigation(
                   futureDocs: futureDocs,
                   futureIssues: futureIssues,
-                  connectionState: connectionState,
-                  data: data,
+                  connectionState: connectionState
                 )));
   }
 

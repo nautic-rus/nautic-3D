@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 
@@ -9,23 +10,24 @@ Future<Tuple2<List<DocData>, String>> fetchDocument(String docNumber) async {
   print("start connection pipeSegs");
   String connectionState = "failed";
   List<DocData> data = [];
-  Tuple2<List<DocData>, String> answer;
+  Tuple2<List<DocData>, String> res;
   try {
     final response =
         await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 && response.body != 'null') {
       print("end connection pipeSegs");
-      data = (jsonDecode(response.body) as Iterable)
+      data = (jsonDecode(response.body)['elements'] as Iterable)
           .map((e) => DocData.fromJson(e))
           .toList();
       connectionState = "connect";
-      if (data.isEmpty) connectionState = "empty";
     }
+    if (data.isEmpty) connectionState = "empty";
   } on TimeoutException {
     print("connection timeout");
   }
-  answer = Tuple2(data, connectionState);
-  return answer;
+  res = Tuple2(data, connectionState);
+
+  return res;
 }
 
 class DocData {
