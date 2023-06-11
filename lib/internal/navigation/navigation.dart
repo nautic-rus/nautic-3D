@@ -59,12 +59,12 @@ class _NavigationState extends State<Navigation> {
     final _kBottomNavBarItems = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
           icon: Icon(
-            Icons.home,
+            Icons.home_outlined,
           ),
           label: "Home"),
       BottomNavigationBarItem(
-          icon: Icon(Icons.qr_code_scanner), label: "QR scanner"),
-      BottomNavigationBarItem(icon: Icon(Icons.file_copy), label: "Catalog"),
+          icon: Icon(Icons.qr_code_scanner_outlined), label: "QR scanner"),
+      BottomNavigationBarItem(icon: Icon(Icons.file_copy_outlined), label: "Catalog"),
     ];
 
     final _kTabPages = <Widget>[
@@ -86,7 +86,11 @@ class _NavigationState extends State<Navigation> {
           type: BottomNavigationBarType.fixed,
           onTap: _onItemTapped,
           items: _kBottomNavBarItems,
-          iconSize: height * 0.025,
+          iconSize: height * 0.04,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          selectedFontSize: 0,
+          unselectedFontSize: 0,
         );
 
     return WillPopScope(

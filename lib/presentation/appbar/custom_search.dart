@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../data/api/documents_services.dart';
 import '../../data/api/issues_services.dart';
@@ -17,8 +19,14 @@ class CustomSearchDelegate extends SearchDelegate {
   String connectionState;
   List<String> documents;
 
+  var brightness;
+  late double width;
+
   @override
   List<Widget>? buildActions(BuildContext context) {
+    brightness = SchedulerBinding.instance.window.platformBrightness;
+    width = MediaQuery.of(context).size.width;
+
     return [
       IconButton(
         onPressed: () {
@@ -33,7 +41,9 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-      onPressed: () {
+      onPressed: () async {
+        FocusManager.instance.primaryFocus?.unfocus();
+        await Future.delayed(Duration(milliseconds: 150));
         close(context, null);
       },
       icon: Icon(Icons.arrow_back),
@@ -49,7 +59,7 @@ class CustomSearchDelegate extends SearchDelegate {
         matchQuery.add(fruit);
       }
     }
-    return ListView.builder(
+    return documents.isNotEmpty ? ListView.builder(
       itemCount: matchQuery.length,
       itemBuilder: (context, index) {
         var result = matchQuery[index];
@@ -67,7 +77,7 @@ class CustomSearchDelegate extends SearchDelegate {
                   )));
             });
       },
-    );
+    ) : isLoading();
   }
 
   // last overwrite to show the
@@ -99,5 +109,14 @@ class CustomSearchDelegate extends SearchDelegate {
             });
       },
     );
+  }
+
+  Widget isLoading() {
+    return Center(
+        child: LoadingAnimationWidget.threeArchedCircle(
+            color: brightness == Brightness.dark
+                ? Color(0xFF67CAD7)
+                : Color(0xFF2C298A),
+            size: width * 0.2));
   }
 }
