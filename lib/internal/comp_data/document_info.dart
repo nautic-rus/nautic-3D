@@ -43,7 +43,7 @@ class _ScanDataState extends State<ScanData> {
     setState(() {
       for (int i = 0; i < widget.futureDocs.length; i++) {
         if ( widget.futureDocs[i].spool == currentSpool) {
-          systemDescr = getSystemDescr( widget.futureDocs[i].systemDescr);
+          systemDescr = getSystemDescr(widget.futureDocs[i].systemDescr);
           line =  widget.futureDocs[i].line;
         }
       }
@@ -93,24 +93,13 @@ class _ScanDataState extends State<ScanData> {
             : Column(
                     children: <Widget>[
                       AutoSizeText(
-                          "There is no data on the server for this query",
+                          "There is no data on the server for this document",
                           style: TextStyle(fontSize: 22, color: Colors.redAccent),
                           maxLines: 3,
                           textAlign: TextAlign.center),
                       SizedBox(
                         height: height * 0.01,
                       ),
-                      // AutoSizeText("SFI-drawing no.:\n$currentDocNumber",
-                      //     style: TextStyle(fontSize: 22),
-                      //     maxLines: 2,
-                      //     textAlign: TextAlign.center),
-                      // SizedBox(
-                      //   height: height * 0.01,
-                      // ),
-                      // AutoSizeText("Spool: $currentSpool",
-                      //     style: TextStyle(fontSize: 22),
-                      //     maxLines: 1,
-                      //     textAlign: TextAlign.center),
                     ],
                   )
                 : Column(

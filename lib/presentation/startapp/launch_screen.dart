@@ -46,10 +46,6 @@ class _SplashScreenState extends State<SplashScreen> {
           print(connectionState);
           value == "connect" ? _loadingDataConnect() : _goToNavigation(context);
         }));
-
-    Future.delayed(const Duration(seconds: 30), () {
-      _goToNavigation(context);
-    });
   }
 
   _setFetchIssues() async {

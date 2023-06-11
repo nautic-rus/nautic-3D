@@ -69,13 +69,6 @@ class _CheckConnectionPageState extends State<CheckConnectionPage> {
                         children: <Widget>[
                           Container(
                               padding: EdgeInsets.all(20),
-                              width: width * 0.9,
-                              height: height * 0.8,
-                              decoration: BoxDecoration(
-                                  color: brightness == Brightness.dark
-                                      ? Colors.white10
-                                      : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(10)),
                               child: isLoading
                                   ? Column(
                                       mainAxisAlignment:

@@ -31,6 +31,9 @@ class _DocumentState extends State<Document> {
   var currentSpool;
   bool isInternetAvailable = true;
 
+  late double width;
+  late double height;
+
   var brightness;
 
   @override
@@ -44,35 +47,33 @@ class _DocumentState extends State<Document> {
 
   _setFetchDocument() async {
     await fetchDocument(currentDocNumber).then((value) => {
-      setState(() {
-        widget.connectionState = value.item2;
-        value.item1.forEach((element) {
-          widget.futureDocs.add(element);
+          setState(() {
+            widget.connectionState = value.item2;
+            value.item1.forEach((element) {
+              widget.futureDocs.add(element);
+            });
+          })
         });
-      })
-    });
   }
 
   final RefreshController _refreshController =
-      RefreshController(
-          initialRefresh: false);
+      RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
     // monitor network fetch
 
     print("refresh");
     setState(() {});
-    await Future.delayed(
-        Duration(milliseconds: 1000));
+    await Future.delayed(Duration(milliseconds: 1000));
     // if failed,use refreshFailed()
+    _setFetchDocument();
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
     // monitor network fetch
     setState(() {});
-    await Future.delayed(
-        Duration(milliseconds: 1000));
+    await Future.delayed(Duration(milliseconds: 1000));
     print("loading");
     if (mounted) setState(() {});
     _refreshController.loadComplete();
@@ -80,7 +81,10 @@ class _DocumentState extends State<Document> {
 
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
     brightness = SchedulerBinding.instance.window.platformBrightness;
+
     return widget.data.isEmpty
         ? Scaffold(
             body: Center(
@@ -100,73 +104,76 @@ class _DocumentState extends State<Document> {
               onRefresh: _onRefresh,
               onLoading: _onLoading,
               controller: _refreshController,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: ScanData(
-                          data: widget.data,
-                          futureDocs: widget.futureDocs,
-                          connectionState: widget.connectionState,
-                        )),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.07,
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              Navigator.of(context).push
-                                (MaterialPageRoute(
-                                  builder: (context) =>
-                                      ThreeRender(data: widget.data)));
-                            });
-                          },
-                          child: Text("Display this spool"),
-                          style: ElevatedButton.styleFrom(
-                              textStyle: TextStyle(fontSize: 24)),
-                        )),
-                    Container(
-                      child: Text(
-                        "Spools in this document",
-                        style: TextStyle(fontSize: 24),
+              child: widget.connectionState == "failed"
+                  ? Positioned(
+                      child: CheckConnectionPage(
+                      page: Container(
                       ),
+                    ))
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: ScanData(
+                              data: widget.data,
+                              futureDocs: widget.futureDocs,
+                              connectionState: widget.connectionState,
+                            )),
+                        SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.07,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) =>
+                                          ThreeRender(data: widget.data)));
+                                });
+                              },
+                              child: Text("Display this spool"),
+                              style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 24)),
+                            )),
+                        Container(
+                          child: Text(
+                            "Spools in this document",
+                            style: TextStyle(fontSize: 24),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 20),
+                          child: SelectSpool(docNumber: currentDocNumber),
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          width: MediaQuery.of(context).size.width,
+                          alignment: Alignment.center,
+                        ),
+                        SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.07,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => SimpleRender(
+                                            data: [
+                                              "${widget.data[0]}",
+                                              "full",
+                                              "${widget.data[2]}"
+                                            ],
+                                            dataSpool: widget.data,
+                                          )));
+                                });
+                              },
+                              child: Text("Display all spools"),
+                              style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 24)),
+                            ))
+                      ],
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: SelectSpool(
-                        docNumber: currentDocNumber
-                      ),
-                      height: MediaQuery.of(context).size.height * 0.4,
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.center,
-                    ),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.07,
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => SimpleRender(
-                                        data: [
-                                          "${widget.data[0]}",
-                                          "full",
-                                          "${widget.data[2]}"
-                                        ],
-                                        dataSpool: widget.data,
-                                      )));
-                            });
-                          },
-                          child: Text("Display all spools"),
-                          style: ElevatedButton.styleFrom(
-                              textStyle: TextStyle(fontSize: 24)),
-                        ))
-                  ],
-                ),
-              ),
-            );
+            ),
+          );
   }
 }

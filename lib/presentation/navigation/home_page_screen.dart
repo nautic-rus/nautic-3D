@@ -164,14 +164,14 @@ class _HomeState extends State<Home> {
                             height: height * 0.1,
                           ),
                           AutoSizeText("SFI-drawing no.:\n${data[0]}",
-                              style: TextStyle(fontSize: 22),
+                              style: TextStyle(fontSize: 25),
                               maxLines: 2,
                               textAlign: TextAlign.center),
                           SizedBox(
                             height: height * 0.05,
                           ),
                           AutoSizeText("Spool: ${data[1]}",
-                              style: TextStyle(fontSize: 22),
+                              style: TextStyle(fontSize: 25),
                               maxLines: 1,
                               textAlign: TextAlign.center),
                           SizedBox(
