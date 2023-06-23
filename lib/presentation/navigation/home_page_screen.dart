@@ -81,19 +81,11 @@ class _HomeState extends State<Home> {
       RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
     print("refresh");
-    // await urlFuture.then((value) => setState(() {
-    //   url = value;
-    // }));
     print("loading");
     if (mounted) setState(() {});
     _refreshController.loadComplete();

@@ -66,7 +66,8 @@ class _NavigationState extends State<Navigation> {
           label: "Home"),
       BottomNavigationBarItem(
           icon: Icon(Icons.qr_code_scanner_outlined), label: "QR scanner"),
-      BottomNavigationBarItem(icon: Icon(Icons.file_copy_outlined), label: "Catalog"),
+      BottomNavigationBarItem(
+          icon: Icon(Icons.file_copy_outlined), label: "Catalog"),
     ];
 
     final _kTabPages = <Widget>[
@@ -78,7 +79,9 @@ class _NavigationState extends State<Navigation> {
         futureDocs: widget.futureDocs,
         connectionState: widget.connectionState,
       ),
-      SelectModel(futureIssues: widget.futureIssues)
+      SelectModel(
+          futureIssues: widget.futureIssues,
+          connectionState: widget.connectionState)
     ];
 
     assert(_kTabPages.length == _kBottomNavBarItems.length);

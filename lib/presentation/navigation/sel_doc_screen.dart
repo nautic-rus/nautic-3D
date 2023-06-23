@@ -17,10 +17,11 @@ class SelectModel extends StatefulWidget {
   SelectModel({
     Key? key,
     required this.futureIssues,
+    required this.connectionState
   }) : super(key: key);
 
   List<IssuesData> futureIssues;
-
+  String connectionState;
   @override
   State<StatefulWidget> createState() => _SelectModelState();
 }
@@ -52,7 +53,7 @@ class _SelectModelState extends State<SelectModel> {
 
   double appBarHeight = 50.0;
 
-  String connectionState = "connect";
+
   String loadSpools = "connect";
 
   var brightness;
@@ -140,21 +141,30 @@ class _SelectModelState extends State<SelectModel> {
       RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
-    // monitor network fetch
     setState(() {});
     print("refresh");
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use refreshFailed()
+    await _setFetchIssues().timeout(const Duration(seconds: 10));
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
-    // monitor network fetch
     setState(() {});
-    await Future.delayed(Duration(milliseconds: 1000));
     print("loading");
     if (mounted) setState(() {});
     _refreshController.loadComplete();
+  }
+
+  _setFetchIssues() async {
+    await fetchIssues().then((value) {
+      setState(() {
+        widget.connectionState = value.item2;
+        widget.futureIssues = [];
+        loadSpools = value.item2;
+        value.item1.forEach((element) {
+          widget.futureIssues.add(element);
+        });
+      });
+    });
   }
 
   @override
@@ -179,281 +189,275 @@ class _SelectModelState extends State<SelectModel> {
               onLoading: _onLoading,
               controller: _refreshController,
               child: Container(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Stepper(
-                        currentStep: _selectedIndex,
-                        type: stepperType,
-                        physics: ScrollPhysics(),
-                        controlsBuilder: (context, _) => Container(),
-                        onStepTapped: (step) => tapped(step),
-                        onStepContinue: continued,
-                        onStepCancel: cancel,
-                        steps: <Step>[
-                          Step(
-                            title: Icon(Icons.directions_boat_outlined, size: height * 0.03),
-                            content: connectionState == "connect"
-                                ? projects.isEmpty
-                                    ? isLoading()
-                                    : Column(children: <Widget>[
-                                        Container(
-                                          child: Text("PROJECTS",
-                                              style: TextStyle(fontSize: 24)),
-                                          padding: EdgeInsets.only(bottom: 20),
-                                        ),
-                                        GridView.builder(
-                                            physics: ScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemCount: projects.length,
-                                            gridDelegate:
-                                                const SliverGridDelegateWithMaxCrossAxisExtent(
-                                                    maxCrossAxisExtent: 200,
-                                                    childAspectRatio: 3 / 1,
-                                                    crossAxisSpacing: 20,
-                                                    mainAxisSpacing: 20),
-                                            itemBuilder:
-                                                (BuildContext ctx, index) {
-                                              return GestureDetector(
-                                                onTap: () => {
-                                                  selectProject(projects[index])
-                                                },
-                                                child: Container(
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                      color: brightness ==
-                                                              Brightness.dark
-                                                          ? Colors.white10
-                                                          : Colors
-                                                              .grey.shade100,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              40)),
-                                                  child: Text(projects[index],
-                                                      style: TextStyle(
-                                                          fontSize: 24)),
-                                                ),
-                                              );
-                                            }),
-                                      ])
-                                : connectionState == "empty"
-                                    ? const Center(
-                                        child: AutoSizeText(
-                                            "There is no data on the server, something wrong",
-                                            style: TextStyle(
-                                                fontSize: 22,
-                                                color: Colors.redAccent),
-                                            maxLines: 3,
-                                            textAlign: TextAlign.center),
-                                      )
-                                    : const Center(
-                                        child: AutoSizeText(
-                                            "No connection to the server, maybe it is broken",
-                                            style: TextStyle(
-                                                fontSize: 22,
-                                                color: Colors.redAccent),
-                                            maxLines: 3,
-                                            textAlign: TextAlign.center),
-                                      ),
-                            isActive: _selectedIndex >= 0,
-                            state: _selectedIndex >= 1
-                                ? StepState.complete
-                                : StepState.disabled,
-                          ),
-                          Step(
-                            title: Icon(Icons.workspaces_outline, size: height * 0.03),
-                            content: Column(children: <Widget>[
-                              Container(
-                                child: Text("DEPARTMENTS",
-                                    style: TextStyle(fontSize: 24)),
-                                padding: EdgeInsets.only(bottom: 20),
-                              ),
-                              GridView.builder(
-                                  physics: ScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: departments.length,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithMaxCrossAxisExtent(
-                                          maxCrossAxisExtent: 330,
-                                          childAspectRatio: 4 / 1,
-                                          crossAxisSpacing: 20,
-                                          mainAxisSpacing: 20),
-                                  itemBuilder: (BuildContext ctx, index) {
-                                    return GestureDetector(
-                                      onTap: () => {
-                                        selectDepartment(departments[index])
-                                      },
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                            color: brightness == Brightness.dark
-                                                ? Colors.white10
-                                                : Colors.grey.shade100,
-                                            borderRadius:
-                                                BorderRadius.circular(40)),
-                                        child: Text(departments[index],
-                                            style: TextStyle(fontSize: 24)),
-                                      ),
-                                    );
-                                  }),
-                            ]),
-                            isActive: _selectedIndex >= 1,
-                            state: _selectedIndex >= 2
-                                ? StepState.complete
-                                : StepState.disabled,
-                          ),
-                          Step(
-                            title: Icon(Icons.file_copy_outlined, size: height * 0.03),
-                            content: Column(children: <Widget>[
-                              Container(
-                                child: Text("DOCUMENTS",
-                                    style: TextStyle(fontSize: 24)),
-                                padding: EdgeInsets.only(bottom: 20),
-                              ),
-                              GridView.builder(
-                                  physics: ScrollPhysics(),
-                                  shrinkWrap: true,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithMaxCrossAxisExtent(
-                                          maxCrossAxisExtent: 400,
-                                          childAspectRatio: 5 / 1,
-                                          crossAxisSpacing: 20,
-                                          mainAxisSpacing: 20),
-                                  itemCount: documents.length,
-                                  itemBuilder: (BuildContext ctx, index) {
-                                    return GestureDetector(
-                                      onTap: () =>
-                                          {selectDocument(documents[index])},
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                            color: brightness == Brightness.dark
-                                                ? Colors.white10
-                                                : Colors.grey.shade100,
-                                            borderRadius:
-                                                BorderRadius.circular(40)),
-                                        child: Text(documents[index],
-                                            style: TextStyle(fontSize: 24)),
-                                      ),
-                                    );
-                                  }),
-                            ]),
-                            isActive: _selectedIndex >= 2,
-                            state: _selectedIndex >= 3
-                                ? StepState.complete
-                                : StepState.disabled,
-                          ),
-                          Step(
-                            title: Icon(Icons.draw_outlined, size: height * 0.03),
-                            content: loadSpools == "connect"
-                                ? spoolsList.isEmpty
-                                    ? isLoading()
-                                    : Column(children: <Widget>[
-                                        Container(
-                                          child: Text("SPOOLS",
-                                              style: TextStyle(fontSize: 24)),
-                                          padding: EdgeInsets.only(bottom: 20),
-                                        ),
-                                        // SizedBox(
-                                        //   height: MediaQuery.of(context)
-                                        //           .size
-                                        //           .height *
-                                        //       0.07,
-                                        //   width: MediaQuery.of(context)
-                                        //           .size
-                                        //           .width *
-                                        //       0.9,
-                                        //   child: ElevatedButton(
-                                        //     onPressed: () {
-                                        //       setState(() {
-                                        //         Navigator.of(context).push(
-                                        //             MaterialPageRoute(
-                                        //                 builder: (context) =>
-                                        //                     SimpleRender(
-                                        //                       data: [
-                                        //                         selectedDocument,
-                                        //                         "full",
-                                        //                         "${data[2]}"
-                                        //                       ],
-                                        //                       dataSpool: [],
-                                        //                     )));
-                                        //       });
-                                        //     },
-                                        //     child: Text("Display all spools"),
-                                        //     style: ElevatedButton.styleFrom(
-                                        //         textStyle:
-                                        //             TextStyle(fontSize: 24)),
-                                        //   ),
-                                        // ),
-                                        GridView.builder(
-                                            physics: ScrollPhysics(),
-                                            shrinkWrap: true,
-                                            gridDelegate:
-                                                const SliverGridDelegateWithMaxCrossAxisExtent(
-                                                    maxCrossAxisExtent: 200,
-                                                    childAspectRatio: 3 / 1,
-                                                    crossAxisSpacing: 20,
-                                                    mainAxisSpacing: 20),
-                                            itemCount: spoolsList.length,
-                                            itemBuilder:
-                                                (BuildContext ctx, index) {
-                                              return GestureDetector(
-                                                onTap: () => {
-                                                  setState(() {
-                                                    data[1] = spoolsList[index];
-                                                    Navigator.of(context)
-                                                        .push(MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                ThreeRender(
-                                                                    data:
-                                                                        data)))
-                                                        .then((value) =>
-                                                            _selectedIndex =
-                                                                _selectedIndex);
-                                                  })
-                                                },
-                                                child: Container(
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                      color: brightness ==
-                                                              Brightness.dark
-                                                          ? Colors.white10
-                                                          : Colors
-                                                              .grey.shade100,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              40)),
-                                                  child: Text(spoolsList[index],
-                                                      style: TextStyle(
-                                                          fontSize: 24)),
-                                                ),
-                                              );
-                                            }),
-                                      ])
-                                : loadSpools == "empty"
-                                    ? const Center(
-                                        child: AutoSizeText(
-                                            "There is no data on the server for this document",
-                                            style: TextStyle(fontSize: 22),
-                                            maxLines: 3,
-                                            textAlign: TextAlign.center),
-                                      )
-                                    : const Center(
-                                        child: AutoSizeText(
-                                            "No connection to the server, maybe it is broken",
-                                            style: TextStyle(
-                                                fontSize: 22,
-                                                color: Colors.redAccent),
-                                            maxLines: 3,
-                                            textAlign: TextAlign.center),
-                                      ),
-                            isActive: _selectedIndex == 3,
-                            state: _selectedIndex == 4
-                                ? StepState.complete
-                                : StepState.disabled,
-                          ),
-                        ],
+                child: Stepper(
+                  currentStep: _selectedIndex,
+                  type: stepperType,
+                  physics: ScrollPhysics(),
+                  controlsBuilder: (context, _) => Container(),
+                  onStepTapped: (step) => tapped(step),
+                  onStepContinue: continued,
+                  onStepCancel: cancel,
+                  steps: <Step>[
+                    Step(
+                      title: Icon(Icons.directions_boat_outlined, size: height * 0.03),
+                      content: widget.connectionState == "connect"
+                          ? projects.isEmpty
+                          ? isLoading()
+                          : Column(children: <Widget>[
+                        Container(
+                          child: Text("PROJECTS",
+                              style: TextStyle(fontSize: 24)),
+                          padding: EdgeInsets.only(bottom: 20),
+                        ),
+                        GridView.builder(
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: projects.length,
+                            gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 200,
+                                childAspectRatio: 3 / 1,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20),
+                            itemBuilder:
+                                (BuildContext ctx, index) {
+                              return GestureDetector(
+                                onTap: () => {
+                                  selectProject(projects[index])
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      color: brightness ==
+                                          Brightness.dark
+                                          ? Colors.white10
+                                          : Colors
+                                          .grey.shade100,
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          40)),
+                                  child: Text(projects[index],
+                                      style: TextStyle(
+                                          fontSize: 24)),
+                                ),
+                              );
+                            }),
+                      ])
+                          : widget.connectionState == "empty"
+                          ? const Center(
+                        child: AutoSizeText(
+                            "There is no data on the server, something wrong",
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.redAccent),
+                            maxLines: 3,
+                            textAlign: TextAlign.center),
+                      )
+                          : const Center(
+                        child: AutoSizeText(
+                            "No connection to the server, maybe it is broken",
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.redAccent),
+                            maxLines: 3,
+                            textAlign: TextAlign.center),
                       ),
+                      isActive: _selectedIndex >= 0,
+                      state: _selectedIndex >= 1
+                          ? StepState.complete
+                          : StepState.disabled,
+                    ),
+                    Step(
+                      title: Icon(Icons.workspaces_outline, size: height * 0.03),
+                      content: Column(children: <Widget>[
+                        Container(
+                          child: Text("DEPARTMENTS",
+                              style: TextStyle(fontSize: 24)),
+                          padding: EdgeInsets.only(bottom: 20),
+                        ),
+                        GridView.builder(
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: departments.length,
+                            gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 330,
+                                childAspectRatio: 4 / 1,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20),
+                            itemBuilder: (BuildContext ctx, index) {
+                              return GestureDetector(
+                                onTap: () => {
+                                  selectDepartment(departments[index])
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      color: brightness == Brightness.dark
+                                          ? Colors.white10
+                                          : Colors.grey.shade100,
+                                      borderRadius:
+                                      BorderRadius.circular(40)),
+                                  child: Text(departments[index],
+                                      style: TextStyle(fontSize: 24)),
+                                ),
+                              );
+                            }),
+                      ]),
+                      isActive: _selectedIndex >= 1,
+                      state: _selectedIndex >= 2
+                          ? StepState.complete
+                          : StepState.disabled,
+                    ),
+                    Step(
+                      title: Icon(Icons.file_copy_outlined, size: height * 0.03),
+                      content: Column(children: <Widget>[
+                        Container(
+                          child: Text("DOCUMENTS",
+                              style: TextStyle(fontSize: 24)),
+                          padding: EdgeInsets.only(bottom: 20),
+                        ),
+                        GridView.builder(
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 400,
+                                childAspectRatio: 5 / 1,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20),
+                            itemCount: documents.length,
+                            itemBuilder: (BuildContext ctx, index) {
+                              return GestureDetector(
+                                onTap: () =>
+                                {selectDocument(documents[index])},
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      color: brightness == Brightness.dark
+                                          ? Colors.white10
+                                          : Colors.grey.shade100,
+                                      borderRadius:
+                                      BorderRadius.circular(40)),
+                                  child: Text(documents[index],
+                                      style: TextStyle(fontSize: 24)),
+                                ),
+                              );
+                            }),
+                      ]),
+                      isActive: _selectedIndex >= 2,
+                      state: _selectedIndex >= 3
+                          ? StepState.complete
+                          : StepState.disabled,
+                    ),
+                    Step(
+                      title: Icon(Icons.draw_outlined, size: height * 0.03),
+                      content: loadSpools == "connect"
+                          ? spoolsList.isEmpty
+                          ? isLoading()
+                          : Column(children: <Widget>[
+                        Container(
+                          child: Text("SPOOLS",
+                              style: TextStyle(fontSize: 24)),
+                          padding: EdgeInsets.only(bottom: 20),
+                        ),
+                        // SizedBox(
+                        //   height: MediaQuery.of(context)
+                        //           .size
+                        //           .height *
+                        //       0.07,
+                        //   width: MediaQuery.of(context)
+                        //           .size
+                        //           .width *
+                        //       0.9,
+                        //   child: ElevatedButton(
+                        //     onPressed: () {
+                        //       setState(() {
+                        //         Navigator.of(context).push(
+                        //             MaterialPageRoute(
+                        //                 builder: (context) =>
+                        //                     SimpleRender(
+                        //                       data: [
+                        //                         selectedDocument,
+                        //                         "full",
+                        //                         "${data[2]}"
+                        //                       ],
+                        //                       dataSpool: [],
+                        //                     )));
+                        //       });
+                        //     },
+                        //     child: Text("Display all spools"),
+                        //     style: ElevatedButton.styleFrom(
+                        //         textStyle:
+                        //             TextStyle(fontSize: 24)),
+                        //   ),
+                        // ),
+                        GridView.builder(
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 200,
+                                childAspectRatio: 3 / 1,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20),
+                            itemCount: spoolsList.length,
+                            itemBuilder:
+                                (BuildContext ctx, index) {
+                              return GestureDetector(
+                                onTap: () => {
+                                  setState(() {
+                                    data[1] = spoolsList[index];
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                        builder: (context) =>
+                                            ThreeRender(
+                                                data:
+                                                data)))
+                                        .then((value) =>
+                                    _selectedIndex =
+                                        _selectedIndex);
+                                  })
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      color: brightness ==
+                                          Brightness.dark
+                                          ? Colors.white10
+                                          : Colors
+                                          .grey.shade100,
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          40)),
+                                  child: Text(spoolsList[index],
+                                      style: TextStyle(
+                                          fontSize: 24)),
+                                ),
+                              );
+                            }),
+                      ])
+                          : loadSpools == "empty"
+                          ? const Center(
+                        child: AutoSizeText(
+                            "There is no data on the server for this document",
+                            style: TextStyle(fontSize: 22),
+                            maxLines: 3,
+                            textAlign: TextAlign.center),
+                      )
+                          : const Center(
+                        child: AutoSizeText(
+                            "No connection to the server, maybe it is broken",
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.redAccent),
+                            maxLines: 3,
+                            textAlign: TextAlign.center),
+                      ),
+                      isActive: _selectedIndex == 3,
+                      state: _selectedIndex == 4
+                          ? StepState.complete
+                          : StepState.disabled,
                     ),
                   ],
                 ),
@@ -467,7 +471,7 @@ class _SelectModelState extends State<SelectModel> {
                         textAlign: TextAlign.center),
                     onPressed: () => setState(() {
                           _selectedIndex--;
-                          connectionState = "connect";
+                          widget.connectionState = "connect";
                           loadSpools = "connect";
                         }))
                 : null),

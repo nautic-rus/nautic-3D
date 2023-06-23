@@ -25,6 +25,8 @@ Future<Tuple2<List<IssuesData>, String>> fetchIssues() async {
     }
   } on TimeoutException {
     print("connection timeout");
+  } on Exception catch (_) {
+    print(_);
   }
   answer = Tuple2(data, connectionState);
   return answer;

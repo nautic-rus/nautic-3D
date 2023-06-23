@@ -67,16 +67,16 @@ class _DocumentState extends State<Document> {
 
     print("refresh");
     setState(() {});
-    await Future.delayed(Duration(milliseconds: 1000));
+    // await Future.delayed(Duration(milliseconds: 1000));
     // if failed,use refreshFailed()
-    _setFetchDocument();
+    await _setFetchDocument();
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
     // monitor network fetch
     setState(() {});
-    await Future.delayed(Duration(milliseconds: 1000));
+    // await Future.delayed(Duration(milliseconds: 1000));
     print("loading");
     if (mounted) setState(() {});
     _refreshController.loadComplete();
@@ -93,107 +93,107 @@ class _DocumentState extends State<Document> {
         title: Text("Document"),
       ),
       body: SmartRefresher(
-              enablePullDown: true,
-              header: WaterDropMaterialHeader(),
-              onRefresh: _onRefresh,
-              onLoading: _onLoading,
-              controller: _refreshController,
-              child: widget.data.isEmpty || connectionState == "notLoad"
-                  ? Center(
-                  child: LoadingAnimationWidget.threeArchedCircle(
-                      color: brightness == Brightness.dark
-                          ? Color(0xFF67CAD7)
-                          : Color(0xFF2C298A),
-                      size: MediaQuery.of(context).size.width * 0.2)) :
-              connectionState == "failed"
-                  ? Positioned(
-                      child: CheckConnectionPage(
-                      page: Container(),
-                    ))
-                  : connectionState == "empty"
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Container(
-                                alignment: Alignment.center,
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: ScanData(
-                                  data: widget.data,
-                                  futureDocs: futureDocs,
-                                  connectionState: connectionState,
-                                )),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Container(
-                                alignment: Alignment.center,
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: ScanData(
-                                  data: widget.data,
-                                  futureDocs: futureDocs,
-                                  connectionState: connectionState,
-                                )),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.07,
-                                width: MediaQuery.of(context).size.width * 0.9,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) => ThreeRender(
-                                                  data: widget.data)));
-                                    });
-                                  },
-                                  child: Text("Display this spool"),
-                                  style: ElevatedButton.styleFrom(
-                                      textStyle: TextStyle(fontSize: 24)),
-                                )),
-                            Container(
-                              child: Text(
-                                "Spools in this document",
-                                style: TextStyle(fontSize: 24),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.symmetric(horizontal: 20),
-                              child: SelectSpool(docNumber: currentDocNumber),
-                              height: MediaQuery.of(context).size.height * 0.4,
-                              width: MediaQuery.of(context).size.width,
+        enablePullDown: true,
+        header: WaterDropMaterialHeader(),
+        onRefresh: _onRefresh,
+        onLoading: _onLoading,
+        controller: _refreshController,
+        child: widget.data.isEmpty || connectionState == "notLoad"
+            ? Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: brightness == Brightness.dark
+                        ? Color(0xFF67CAD7)
+                        : Color(0xFF2C298A),
+                    size: MediaQuery.of(context).size.width * 0.2))
+            : connectionState == "failed"
+                ? Positioned(
+                    child: CheckConnectionPage(
+                    page: Container(
+                      width: width,
+                      height: height,
+                    ),
+                  ))
+                : connectionState == "empty"
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Container(
                               alignment: Alignment.center,
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: ScanData(
+                                data: widget.data,
+                                futureDocs: futureDocs,
+                                connectionState: connectionState,
+                              )),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Container(
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: ScanData(
+                                data: widget.data,
+                                futureDocs: futureDocs,
+                                connectionState: connectionState,
+                              )),
+                          SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.07,
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) => ThreeRender(
+                                                data: widget.data)));
+                                  });
+                                },
+                                child: Text("Display this spool"),
+                                style: ElevatedButton.styleFrom(
+                                    textStyle: TextStyle(fontSize: 24)),
+                              )),
+                          Container(
+                            child: Text(
+                              "Spools in this document",
+                              style: TextStyle(fontSize: 24),
                             ),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.07,
-                                width: MediaQuery.of(context).size.width * 0.9,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  SimpleRender(
-                                                    data: [
-                                                      "${widget.data[0]}",
-                                                      "full",
-                                                      "${widget.data[2]}"
-                                                    ],
-                                                    dataSpool: widget.data,
-                                                  )));
-                                    });
-                                  },
-                                  child: Text("Display all spools"),
-                                  style: ElevatedButton.styleFrom(
-                                      textStyle: TextStyle(fontSize: 24)),
-                                ))
-                          ],
-                        ),
-            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric(horizontal: 20),
+                            child: SelectSpool(docNumber: currentDocNumber),
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            width: MediaQuery.of(context).size.width,
+                            alignment: Alignment.center,
+                          ),
+                          SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.07,
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) => SimpleRender(
+                                                  data: [
+                                                    "${widget.data[0]}",
+                                                    "full",
+                                                    "${widget.data[2]}"
+                                                  ],
+                                                  dataSpool: widget.data,
+                                                )));
+                                  });
+                                },
+                                child: Text("Display all spools"),
+                                style: ElevatedButton.styleFrom(
+                                    textStyle: TextStyle(fontSize: 24)),
+                              ))
+                        ],
+                      ),
+      ),
     );
   }
 }
